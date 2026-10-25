@@ -22,11 +22,18 @@ public final class AceResources {
     basePath = path.endsWith("/") ? path : path + "/";
   }
 
-  /** Load core and optional modules (for example mode-java or ext-language_tools). */
+  /** Load core plus completion, snippet and search UI extensions from the bundled WebJar. */
+  public static void whenReady(Runnable ready, Consumer<Throwable> failed) {
+    whenReady(new String[] {"ext-language_tools", "ext-searchbox"}, ready, failed);
+  }
+
+  /**
+   * Load core and optional modules (for example mode-java, snippets/java or ext-language_tools).
+   */
   public static void whenReady(String[] requested, Runnable ready, Consumer<Throwable> failed) {
     String[] names = requested.clone();
     for (String name : names) {
-      if (!name.matches("(mode|theme|ext)-[A-Za-z0-9_]+"))
+      if (!name.matches("((mode|theme|ext)-[A-Za-z0-9_]+|snippets/[A-Za-z0-9_]+)"))
         throw new IllegalArgumentException("Invalid Ace module: " + name);
     }
     if (core == null)
