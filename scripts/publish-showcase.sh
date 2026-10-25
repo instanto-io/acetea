@@ -22,6 +22,8 @@ fi
 cp -R "$site_dir/." "$publish_dir/"
 printf '{"sourceCommit":"%s","validation":"mvn clean verify; Chromium and WebKit"}\n' "$source_commit" > "$publish_dir/build-info.json"
 touch "$publish_dir/.nojekyll"
+# Keep upstream license bytes identical to their recorded SHA-256 checksums.
+printf 'legal/runtime/** -text\n' > "$publish_dir/.gitattributes"
 git -C "$publish_dir" add .
 git -C "$publish_dir" commit -q -m "Publish showcase from $source_commit"
 git -C "$publish_dir" push -q origin showcase
