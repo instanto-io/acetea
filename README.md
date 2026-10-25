@@ -21,8 +21,12 @@ Java/JSON/SQL editing, custom Java completion, annotations and markers, commands
 selection, themes, read-only mode, and editor recreation. Save stores a snapshot
 in memory for this session. The diagnostic button displays an example warning.
 
-The `main` workflow builds the WebJar and Java library, runs Chromium/WebKit
-contracts, then deploys the static showcase to GitHub Pages.
+`scripts/publish-showcase.sh` builds and verifies the WebJar and Java library on
+a machine with access to the Instanto Maven registry, pushes only the static
+showcase to the `showcase` branch, and dispatches its GitHub Pages deployment.
+The deployed `build-info.json` records the source commit. The optional full-build
+workflow needs an `instanto-container` runner with registry access; GitHub-hosted
+runners cannot reach that private registry.
 
 ## Build and run
 

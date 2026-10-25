@@ -1,8 +1,5 @@
 name: Build AceTea and publish showcase
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
@@ -12,7 +9,7 @@ concurrency:
 jobs:
   verify:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, instanto-container]
     timeout-minutes: 30
     env:
       FORGEJO_PACKAGE_USER: ${{ secrets.FORGEJO_PACKAGE_USER }}
