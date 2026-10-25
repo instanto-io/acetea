@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>io.instanto</groupId>
+    <artifactId>acetea-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>acetea-webjar</artifactId>
+  <name>AceTea WebJar</name>
+  <description>Pinned Ace 1.45.2 browser distribution in WebJar layout</description>
+  <licenses>
+    <license>
+      <name>BSD-3-Clause</name>
+      <url>https://github.com/ajaxorg/ace/blob/master/LICENSE</url>
+    </license>
+  </licenses>
+</project>

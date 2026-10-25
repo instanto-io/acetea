@@ -1,0 +1,33 @@
+{
+  "repository": "https://github.com/daveho/AceGWT",
+  "commit": "b0796a534c05af17a345b9ff48fa2772844547c0",
+  "sha256": {
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceAnnotation.java": "132fb8d90512e0f01725f1bba8d1f81bc6181874620dded72da048804dfd38af",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceAnnotationType.java": "3e7bc0ae01706570cfa469741a432e8683e42a5562194e955ff423d9f5cc9a9f",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCommand.java": "15b82f5d4863ed0bea50d9ebcf41e41cd324e936bf54651870d39632fe20c8c6",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCommandArgs.java": "c290117667f3b917c65a1b59e5ca270f5b2078940091eb8778d9a7d4acb9e97f",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCommandDescription.java": "227fef1bc48e034a573dadeac05aea8c66504388f5b4b93f645151ef83019dbd",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCommandLine.java": "fe0a4807998d7f796ceaf3def969c2b1121c57c63822c2e5663810fb5c7a87e8",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCommandLineListener.java": "155262dae6df8abc00fdf4cefa99cc943a506766bfc3082b7287771ec2f546ec",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletion.java": "f217e8da21c4ba8de60d0ad23a2295f4d2d962e1a372fe5413b7ba554530304a",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletionCallback.java": "17e220a413843e7c57de29a6d15c2b40b980b9e04c45ceb23b4fbc6ff2565fa3",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletionCallbackImpl.java": "87fd863a070be5676875769751db065dd04f3a47c25d4a00540af10f57b167a6",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletionProvider.java": "02bd519944186cb77fc6abadd2c0ae0b60c8b80fb0e7d65997690462bfed0dc7",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletionSnippet.java": "a861f31b6387d536a6c34e051a2ae97ee2c4fbe594a1096f6f6500a9f39f9eee",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletionSnippetSegment.java": "d4d8739ac9ae2a5f31933f6e097a4452ab63f4cca764672ff325f8dd41d6225e",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletionSnippetSegmentLiteral.java": "85006c009022dbfabf51abe115280155a669e01075b4c5d67596d7abe950cada",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletionSnippetSegmentTabstopItem.java": "9c2450fdad2ead72047f039d7d7b259be427ad4267c892faa6344d9caa8b4252",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceCompletionValue.java": "e94a3a037baf1f91576432dc07fbc20c7e0dcafbe031589b875bdd5d188e8b16",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceDefaultCommandLine.java": "24463bc3521231dfd6559d405521db3ef305e77edc4957f5d90c9f8228e8eaa2",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceEditor.java": "fd5625c218064c362fd26156e9e5ba141b538e1ab95c8f74915bd6cb8f96b7e3",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceEditorCallback.java": "b78224c14c80d1b9bd0a31f6d3058e5159cbd15178a2b82d39fca2ba3ef197e3",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceEditorCursorPosition.java": "dca59c02a8ad08a9d8fe5f70a79f18550d4a2f7b03a96286d638d5a96c29e6d8",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceEditorMode.java": "baadd0de122ed861b42fa1865891e30f53e19fe45aad00addc76c509cf870b76",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceEditorTheme.java": "45720945c0b0e352e32cc16a1f3d847a07965fbfe4543918fc5e34945be70464",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceMarkerType.java": "e4e0de90041610fc9d5f4170c0f9047a69ed772a10332a8c5cb0ff47caf0f473",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceRange.java": "0ce07d32cfe2a73f95c691089e8bacfda74a24ba66a3efe59c4088aae21e84a5",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceSelection.java": "11dd920631c8d59f8e803e44a0643ef554506f9d16f375c5539e0adf1f392a1e",
+    "AceGWT/src/main/java/edu/ycp/cs/dh/acegwt/client/ace/AceSelectionListener.java": "21bea12d499593c888df674ca98138e8df065ddd8cbbf76498ba3af479a10e58",
+    "LICENSE": "c49834c4192cc081c6a309a88924c8960b2f4684af4ad3a4396f2b5d87b69ee4"
+  }
+}
