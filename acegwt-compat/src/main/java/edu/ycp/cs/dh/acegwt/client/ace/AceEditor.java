@@ -683,6 +683,193 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
     return new AceCompletionCallbackImpl(jsCallback);
   }
 
+  /** Enable completion while typing. Requires ext-language_tools to be loaded first. */
+  public void setLiveAutocompletionEnabled(boolean enabled) {
+    requireLanguageTools();
+    booleanOption(unwrapEditor(), "enableLiveAutocompletion", enabled);
+  }
+
+  /** Delay before live completion, in milliseconds. Requires ext-language_tools. */
+  public void setLiveAutocompletionDelay(int milliseconds) {
+    if (milliseconds < 0) throw new IllegalArgumentException("Negative completion delay");
+    requireLanguageTools();
+    numberOption(unwrapEditor(), "liveAutocompletionDelay", milliseconds);
+  }
+
+  /** Minimum prefix length for live completion. Requires ext-language_tools. */
+  public void setLiveAutocompletionThreshold(int characters) {
+    if (characters < 0) throw new IllegalArgumentException("Negative completion threshold");
+    requireLanguageTools();
+    numberOption(unwrapEditor(), "liveAutocompletionThreshold", characters);
+  }
+
+  /** Enable Tab expansion of registered snippets. Requires ext-language_tools. */
+  public void setSnippetsEnabled(boolean enabled) {
+    requireLanguageTools();
+    booleanOption(unwrapEditor(), "enableSnippets", enabled);
+  }
+
+  /** Insert an Ace snippet, including numbered placeholders. Requires ext-language_tools. */
+  public void insertSnippet(String snippet) {
+    java.util.Objects.requireNonNull(snippet, "snippet");
+    requireLanguageTools();
+    insertNativeSnippet(unwrapEditor(), snippet);
+  }
+
+  private static void requireLanguageTools() {
+    if (!hasModule("ace/ext/language_tools"))
+      throw new IllegalStateException("Load ext-language_tools with AceResources.whenReady first");
+  }
+
+  /** Find and select a match, or return null. Options do not leak from previous searches. */
+  public AceRange find(String needle, AceSearchOptions options) {
+    return AceRange.wrap(findNative(unwrapEditor(), searchOptions(needle, options)));
+  }
+
+  /** Find literal text, case-insensitively, wrapping at the end of the document. */
+  public AceRange find(String needle) {
+    return find(needle, new AceSearchOptions());
+  }
+
+  /** Replace all matches in the document and return the replacement count. */
+  public int replaceAll(String needle, String replacement, AceSearchOptions options) {
+    java.util.Objects.requireNonNull(replacement, "replacement");
+    return replaceAllNative(unwrapEditor(), replacement, searchOptions(needle, options));
+  }
+
+  private static org.teavm.jso.JSObject searchOptions(String needle, AceSearchOptions options) {
+    java.util.Objects.requireNonNull(needle, "needle");
+    if (needle.isEmpty()) throw new IllegalArgumentException("Empty search text");
+    return java.util.Objects.requireNonNull(options, "options").toNative(needle);
+  }
+
+  /** Open Ace's search/replace panel. Requires ext-searchbox to be loaded first. */
+  public void showSearch(boolean showReplace) {
+    if (!hasModule("ace/ext/searchbox"))
+      throw new IllegalStateException("Load ext-searchbox with AceResources.whenReady first");
+    showNativeSearch(unwrapEditor(), showReplace);
+  }
+
+  /** Undo the last edit, flushing pending changes into Ace's history first. */
+  public void undo() {
+    historyAction(unwrapEditor(), false);
+  }
+
+  /** Redo the last undone edit. */
+  public void redo() {
+    historyAction(unwrapEditor(), true);
+  }
+
+  public boolean canUndo() {
+    return hasHistory(unwrapEditor(), false);
+  }
+
+  public boolean canRedo() {
+    return hasHistory(unwrapEditor(), true);
+  }
+
+  /** Start a separate undo group for subsequent programmatic edits. */
+  public void startUndoGroup() {
+    markUndoGroup(unwrapEditor());
+  }
+
+  /** Clear undo/redo history, for example after loading a different document. */
+  public void resetUndoHistory() {
+    resetHistory(unwrapEditor());
+  }
+
+  /** Text shown when the document is empty. */
+  public void setPlaceholder(String placeholder) {
+    stringOption(unwrapEditor(), "placeholder", java.util.Objects.requireNonNull(placeholder));
+  }
+
+  /** Accessible label for Ace's actual text input. */
+  public void setTextInputAriaLabel(String label) {
+    stringOption(unwrapEditor(), "textInputAriaLabel", java.util.Objects.requireNonNull(label));
+  }
+
+  /** Enable Ace's keyboard navigation accessibility mode. */
+  public void setKeyboardAccessibilityEnabled(boolean enabled) {
+    booleanOption(unwrapEditor(), "enableKeyboardAccessibility", enabled);
+  }
+
+  public void setShowInvisibles(boolean enabled) {
+    booleanOption(unwrapEditor(), "showInvisibles", enabled);
+  }
+
+  public void setDisplayIndentGuides(boolean enabled) {
+    booleanOption(unwrapEditor(), "displayIndentGuides", enabled);
+  }
+
+  public void setHighlightIndentGuides(boolean enabled) {
+    booleanOption(unwrapEditor(), "highlightIndentGuides", enabled);
+  }
+
+  public void setRelativeLineNumbers(boolean enabled) {
+    booleanOption(unwrapEditor(), "relativeLineNumbers", enabled);
+  }
+
+  @org.teavm.jso.JSBody(params = "name", script = "return !!ace.require(name);")
+  private static native boolean hasModule(String name);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "name", "value"},
+      script = "e.setOption(name,value);")
+  private static native void booleanOption(org.teavm.jso.JSObject e, String name, boolean value);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "name", "value"},
+      script = "e.setOption(name,value);")
+  private static native void numberOption(org.teavm.jso.JSObject e, String name, int value);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "name", "value"},
+      script = "e.setOption(name,value);")
+  private static native void stringOption(org.teavm.jso.JSObject e, String name, String value);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "snippet"},
+      script = "ace.require('ace/snippets').snippetManager.insertSnippet(e,snippet);")
+  private static native void insertNativeSnippet(org.teavm.jso.JSObject e, String snippet);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "options"},
+      script = "return e.find(options) || null;")
+  private static native org.teavm.jso.JSObject findNative(
+      org.teavm.jso.JSObject e, org.teavm.jso.JSObject options);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "replacement", "options"},
+      script = "return e.replaceAll(replacement,options);")
+  private static native int replaceAllNative(
+      org.teavm.jso.JSObject e, String replacement, org.teavm.jso.JSObject options);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "replace"},
+      script = "ace.require('ace/ext/searchbox').Search(e,replace);")
+  private static native void showNativeSearch(org.teavm.jso.JSObject e, boolean replace);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "redo"},
+      script = "e.session.markUndoGroup(); if(redo) e.redo(); else e.undo();")
+  private static native void historyAction(org.teavm.jso.JSObject e, boolean redo);
+
+  @org.teavm.jso.JSBody(
+      params = {"e", "redo"},
+      script =
+          "e.session.markUndoGroup(); var u=e.session.getUndoManager(); return redo ? u.hasRedo() : u.hasUndo();")
+  private static native boolean hasHistory(org.teavm.jso.JSObject e, boolean redo);
+
+  @org.teavm.jso.JSBody(
+      params = "e",
+      script = "e.session.markUndoGroup(); e.session.getUndoManager().startNewGroup();")
+  private static native void markUndoGroup(org.teavm.jso.JSObject e);
+
+  @org.teavm.jso.JSBody(
+      params = "e",
+      script = "e.session.markUndoGroup(); e.session.getUndoManager().reset();")
+  private static native void resetHistory(org.teavm.jso.JSObject e);
+
   /** Underlying editor for optional TeaVM integrations. Available after startEditor(). */
   public org.teavm.jso.JSObject unwrapEditor() {
     if (editor == null) throw new IllegalStateException("Editor is not started");

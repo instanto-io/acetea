@@ -8,7 +8,7 @@ import org.teavm.jso.*;
 public final class EditorDemo {
   private static AceEditor editor;
   private static int changes;
-  private static boolean dark = true, readOnly;
+  private static boolean dark = true, readOnly, liveCompletion, invisibles, relativeLines;
   private static final String JAVA =
       "public class Main {\n    public static void main(String[] args) {\n        System.out.println(\"Hello from TeaVM!\");\n    }\n}\n";
   private static String saved = JAVA;
@@ -17,6 +17,8 @@ public final class EditorDemo {
     AceResources.whenReady(
         new String[] {
           "ext-language_tools",
+          "ext-searchbox",
+          "snippets/java",
           "mode-java",
           "mode-json",
           "mode-sql",
@@ -82,6 +84,53 @@ public final class EditorDemo {
           editor.focus();
           editor.execCommand("startAutocomplete");
         });
+    click("search", () -> editor.showSearch(true));
+    click("undo", () -> editor.undo());
+    click("redo", () -> editor.redo());
+    click(
+        "snippet",
+        () -> {
+          editor.focus();
+          editor.insertSnippet("System.out.println(${1:\"Hello from a snippet\"});$0");
+          text(
+              "output",
+              "Snippet inserted through Java. Type to replace the selected placeholder, then press Tab.");
+        });
+    click(
+        "live",
+        () -> {
+          liveCompletion = !liveCompletion;
+          editor.setLiveAutocompletionEnabled(liveCompletion);
+          text("live", liveCompletion ? "Live completion: on" : "Live completion: off");
+        });
+    click(
+        "whitespace",
+        () -> {
+          invisibles = !invisibles;
+          editor.setShowInvisibles(invisibles);
+          text("whitespace", invisibles ? "Hide whitespace" : "Show whitespace");
+        });
+    click(
+        "relative",
+        () -> {
+          relativeLines = !relativeLines;
+          editor.setRelativeLineNumbers(relativeLines);
+          text("relative", relativeLines ? "Absolute lines" : "Relative lines");
+        });
+    click(
+        "find-java",
+        () -> {
+          AceRange match =
+              editor.find(
+                  "System", new AceSearchOptions().withCaseSensitive(true).withWholeWord(true));
+          text(
+              "output",
+              match == null
+                  ? "No match for System."
+                  : "Found System at line "
+                      + (match.getStart().getRow() + 1)
+                      + " through Java search.");
+        });
     click("save", EditorDemo::save);
     click(
         "recreate",
@@ -122,6 +171,17 @@ public final class EditorDemo {
     editor.setTabSize(4);
     editor.setAutocompleteEnabled(true);
     editor.setReadOnly(readOnly);
+    editor.setPlaceholder("Start typing your code…");
+    editor.setTextInputAriaLabel("AceTea source editor");
+    editor.setKeyboardAccessibilityEnabled(true);
+    editor.setSnippetsEnabled(true);
+    editor.setLiveAutocompletionDelay(150);
+    editor.setLiveAutocompletionThreshold(2);
+    editor.setLiveAutocompletionEnabled(liveCompletion);
+    editor.setDisplayIndentGuides(true);
+    editor.setHighlightIndentGuides(true);
+    editor.setShowInvisibles(invisibles);
+    editor.setRelativeLineNumbers(relativeLines);
     editor.addOnChangeHandler(
         e -> {
           changes++;
@@ -154,6 +214,7 @@ public final class EditorDemo {
     editor.setModeByName(mode);
     editor.setText(value);
     editor.gotoLine(1);
+    editor.resetUndoHistory();
     text(
         "filename",
         mode.equals("java") ? "Main.java" : mode.equals("json") ? "project.json" : "query.sql");
@@ -222,7 +283,69 @@ public final class EditorDemo {
                       "snippet",
                       null)
                 }));
+    modernContracts();
     attribute("data-contracts", "passed");
+  }
+
+  private static void modernContracts() {
+    editor.setText("alpha ALPHA alphabet\nbeta alpha");
+    editor.gotoLine(1);
+    var literal =
+        new AceSearchOptions().withCaseSensitive(true).withWholeWord(true).withSkipCurrent(false);
+    AceRange first = editor.find("alpha", literal);
+    require(
+        first != null && first.getStart().getRow() == 0 && first.getEnd().getColumn() == 5,
+        "search range");
+    AceRange next =
+        editor.find("alpha", new AceSearchOptions().withCaseSensitive(true).withWholeWord(true));
+    require(next != null && next.getStart().getRow() == 1, "search next whole word");
+    require(editor.find("missing") == null, "search no match");
+    require(editor.replaceAll("alpha", "x", literal) == 2, "replace whole words");
+    require(editor.getText().equals("x ALPHA alphabet\nbeta x"), "replace respects case");
+    require(editor.replaceAll("ALPHA", "y", new AceSearchOptions()) == 2, "search options reset");
+    require(editor.getText().equals("x y ybet\nbeta x"), "literal replacement");
+    editor.setText("one 12 two 34");
+    require(
+        editor.replaceAll("[0-9]+", "#", new AceSearchOptions().withRegExp(true)) == 2,
+        "regular expression");
+    require(editor.getText().equals("one # two #"), "regular expression result");
+    editor.setText("base");
+    editor.gotoLine(1);
+    editor.resetUndoHistory();
+    require(!editor.canUndo() && !editor.canRedo(), "history reset");
+    editor.insertAtCursor("added ");
+    require(editor.canUndo(), "undo available");
+    editor.undo();
+    require(editor.getText().equals("base") && editor.canRedo(), "undo pending Java edit");
+    editor.redo();
+    require(editor.getText().equals("added base"), "redo Java edit");
+    editor.startUndoGroup();
+    editor.insertAtCursor("second ");
+    editor.undo();
+    require(editor.getText().equals("added base"), "undo group boundary");
+    editor.setText("");
+    editor.insertSnippet("hello ${1:world}$0");
+    require(editor.getText().equals("hello world"), "snippet expansion");
+    require(!editor.getSelection().isEmpty(), "snippet placeholder selected");
+    editor.insertAtCursor("Java");
+    require(editor.getText().equals("hello Java"), "snippet placeholder replacement");
+    editor.execCommand("goToNextSnippetTabstop");
+    editor.resetUndoHistory();
+    boolean invalid = false;
+    try {
+      editor.setLiveAutocompletionDelay(-1);
+    } catch (IllegalArgumentException expected) {
+      invalid = true;
+    }
+    require(invalid, "reject negative completion delay");
+    AceEditor stopped = new AceEditor();
+    boolean guarded = false;
+    try {
+      stopped.undo();
+    } catch (IllegalStateException expected) {
+      guarded = true;
+    }
+    require(guarded, "new bindings require started editor");
   }
 
   private static void require(boolean ok, String detail) {

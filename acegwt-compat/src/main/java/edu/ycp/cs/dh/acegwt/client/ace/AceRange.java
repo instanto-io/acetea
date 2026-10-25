@@ -12,6 +12,27 @@ public final class AceRange extends JavaScriptObject {
     super(value);
   }
 
+  static AceRange wrap(JSObject value) {
+    return value == null ? null : new AceRange(value);
+  }
+
+  /** Zero-based start position. */
+  public AceEditorCursorPosition getStart() {
+    return new AceEditorCursorPosition(
+        coordinate(unwrap(), "start", "row"), coordinate(unwrap(), "start", "column"));
+  }
+
+  /** Zero-based exclusive end position. */
+  public AceEditorCursorPosition getEnd() {
+    return new AceEditorCursorPosition(
+        coordinate(unwrap(), "end", "row"), coordinate(unwrap(), "end", "column"));
+  }
+
+  @JSBody(
+      params = {"range", "end", "coordinate"},
+      script = "return range[end][coordinate];")
+  private static native int coordinate(JSObject range, String end, String coordinate);
+
   public static AceRange create(int a, int b, int c, int d) {
     return new AceRange(make(a, b, c, d));
   }

@@ -10,15 +10,16 @@ remain unchanged to ease migration.
 
 ## Modules
 
-- `acetea-webjar`: pinned Ace 1.45.2 JavaScript, modes, themes, extensions, workers and license under `META-INF/resources/webjars/ace/1.45.2/`.
-- `acegwt-compat`: Java widget, selection/range APIs, annotations, markers, commands and custom completion callbacks; bundled Ace modes, themes, extensions and workers.
-- `acegwt-demo`: Java-authored showcase with Java/JSON/SQL documents, themes, selection, read-only mode, diagnostics, custom completion, save commands, and destroy/recreate controls.
+- `acetea-webjar`: pinned Ace 1.45.2 JavaScript, modes, themes, snippets, extensions, workers and license under `META-INF/resources/webjars/ace/1.45.2/`.
+- `acegwt-compat`: Java widget, selection/range APIs, annotations, markers, commands, search/replacement, undo/redo, snippets, accessibility options and custom completion callbacks; bundled Ace modes, themes, extensions and workers.
+- `acegwt-demo`: Java-authored showcase with Java/JSON/SQL documents, themes, selection, read-only mode, diagnostics, custom completion, live completion, snippets, search/replace, undo/redo, whitespace and relative line numbers, save commands, and destroy/recreate controls.
 
 ## Showcase
 
 [Open the AceTea showcase](https://instanto-io.github.io/acetea/). It demonstrates
 Java/JSON/SQL editing, custom Java completion, annotations and markers, commands,
-selection, themes, read-only mode, and editor recreation. Save stores a snapshot
+selection, themes, read-only mode, live completion, snippet tab stops, search/replace,
+undo/redo, whitespace, relative line numbers and editor recreation. Save stores a snapshot
 in memory for this session. The diagnostic button displays an example warning.
 
 `scripts/publish-showcase.sh` builds and verifies the WebJar and Java library on
@@ -40,6 +41,10 @@ python3 -m http.server 8792 --directory acegwt-demo/target/site
 Open http://localhost:8792. `verify` runs the showcase in Chromium and WebKit with Playwright; install their browser binaries first if needed. `mvn package -DskipTests` builds without browser verification.
 
 The tests check Java API contracts, editing, annotations and markers, custom completion, selection, read-only state, and repeated native-editor destruction/recreation without duplicate change callbacks.
+Java contracts also cover search flags and range positions, replacement counts, regex searches,
+snippet placeholder replacement, undo grouping and reset, and invalid/lifecycle inputs.
+Browser interactions check search UI, live completion, accessible input labels, snippet
+tab stops, history and display options, including restored configuration after recreation.
 They also exercise WebJar loading under a nested URL, deduplicated scripts and a
 missing-resource failure message. Desktop and mobile screenshots are written to `acegwt-demo/target/`.
 
@@ -59,7 +64,8 @@ under a GitHub Pages project path too. For another mount point, call
 
 ```java
 AceResources.whenReady(
-    new String[]{"mode-java", "theme-tomorrow_night", "ext-language_tools"},
+    new String[]{"mode-java", "theme-tomorrow_night", "ext-language_tools",
+                 "ext-searchbox", "snippets/java"},
     () -> createEditor(),
     failure -> showLoadError(failure.getMessage()));
 ```
@@ -79,9 +85,61 @@ editor.addOnChangeHandler(event -> saveDraft(editor.getText()));
 
 Call `startEditor()` after attachment. Removing the widget destroys its native editor; attach and call `startEditor()` to initialize it again. Save and restore application text when recreating the widget, as shown in the demo. `startEditor()` and `destroy()` are idempotent. Explicit `AceRange` and annotation wrappers replace GWT overlay casts.
 
+## Modern Java API
+
+The original AceGWT methods remain available. These additive bindings expose capabilities
+in the pinned modern Ace runtime, including features the original wrapper did not expose.
+Some features (such as history and search) existed in older Ace itself; they are new Java
+bindings here, not a claim that all were introduced after Ace 1.3.3.
+
+| Capability | Java API | Assets to load |
+| --- | --- | --- |
+| Literal/regex search, case and word matching, direction and wrap | `find`, `replaceAll`, `AceSearchOptions`; `AceRange.getStart/getEnd` | Core |
+| Search and replace panel | `showSearch(true)` | `ext-searchbox` |
+| Undo/redo and programmatic edit grouping | `undo`, `redo`, `canUndo`, `canRedo`, `startUndoGroup`, `resetUndoHistory` | Core |
+| Live completion with timing and prefix controls | `setLiveAutocompletionEnabled`, `setLiveAutocompletionDelay`, `setLiveAutocompletionThreshold` | `ext-language_tools` |
+| Snippet expansion and numbered placeholders | `setSnippetsEnabled`, `insertSnippet` | `ext-language_tools`; optionally `snippets/java` etc. for predefined language snippets |
+| Accessible input label and keyboard navigation | `setTextInputAriaLabel`, `setKeyboardAccessibilityEnabled` | Core |
+| Placeholder, whitespace, indentation guides and relative line numbers | `setPlaceholder`, `setShowInvisibles`, `setDisplayIndentGuides`, `setHighlightIndentGuides`, `setRelativeLineNumbers` | Core |
+
+```java
+editor.setTextInputAriaLabel("Source editor");
+editor.setKeyboardAccessibilityEnabled(true);
+editor.setPlaceholder("Start typing…");
+editor.setLiveAutocompletionEnabled(true);
+editor.setLiveAutocompletionDelay(150); // milliseconds
+editor.setLiveAutocompletionThreshold(2);
+editor.setSnippetsEnabled(true);
+editor.insertSnippet("System.out.println(${1:value});$0");
+
+AceSearchOptions options = new AceSearchOptions()
+    .withCaseSensitive(true).withWholeWord(true);
+AceRange match = editor.find("value", options); // null when not found
+int replacements = editor.replaceAll("value", "message", options);
+editor.showSearch(true);
+editor.undo();
+```
+
+Search defaults are literal, case-insensitive, forward and wrapping, skipping the
+current match. Positions are zero-based and range ends are exclusive. Use
+`withSkipCurrent(false)` to include the current position. Replacement covers the
+whole document. Regular expressions and replacement groups use JavaScript syntax.
+Loading a new document can be followed by `resetUndoHistory()`; use `startUndoGroup()`
+to separate successive programmatic edits. These methods require a started editor.
+
+`AceResources.whenReady(ready, failed)` loads core plus the completion/snippet and
+search UI extensions. The overload taking module names lets you choose exactly
+what to load, including `snippets/java`. All assets come from the WebJar. The new
+extension-dependent methods report a clear error if their extension was not loaded.
+See the [Ace editor options](https://ace.c9.io/api/interfaces/ace.Ace.EditorOptions.html)
+and [editor API](https://ace.c9.io/api/classes/ace.Editor.html) for underlying behavior.
+
 ## Scope and compatibility
 
 This preserves the upstream Java package and most public method shapes, but is not a binary-compatible GWT artifact. Code relying on arbitrary GWT JavaScriptObject overlay casts should use the provided wrappers. Modes/themes must be loaded before selecting them by name. Browser verification covers the showcased paths, not every Ace option, mode or extension. Remote completion services and persistent storage are application responsibilities.
+This is a curated API, not complete coverage of Ace: independent session management,
+code lenses, inline ghost text, diff views and arbitrary extension APIs do not yet
+have dedicated Java wrappers. `unwrapEditor()` remains available for custom TeaVM integrations.
 
 ## Credits and licenses
 

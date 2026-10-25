@@ -65,9 +65,54 @@ public class EditorDemoIT {
       page.navigate("http://127.0.0.1:" + server.getAddress().getPort() + "/project/");
       page.waitForFunction("document.body.dataset.ready === 'true'");
       assertEquals("passed", page.locator("body").getAttribute("data-contracts"));
+      page.locator("#find-java").click();
+      assertEquals("System", page.evaluate("showcaseEditor.getSelectedText()"));
+      page.locator("#search").click();
+      page.waitForSelector(".ace_search");
+      page.locator(".ace_search_field").first().fill("Hello");
+      page.locator(".ace_search_field").first().press("Enter");
+      assertEquals("Hello", page.evaluate("showcaseEditor.getSelectedText()"));
+      page.locator(".ace_search_field").first().press("Escape");
+      page.locator("#whitespace").click();
+      assertEquals(true, page.evaluate("showcaseEditor.getOption('showInvisibles')"));
+      page.locator("#relative").click();
+      assertEquals(true, page.evaluate("showcaseEditor.getOption('relativeLineNumbers')"));
+      assertEquals(true, page.evaluate("showcaseEditor.getOption('enableKeyboardAccessibility')"));
+      assertTrue(
+          page.locator("#editor-host .ace_text-input")
+              .getAttribute("aria-label")
+              .contains("AceTea source editor"));
+      page.locator("#java").click();
+      page.locator("#snippet").click();
+      assertTrue(
+          page.evaluate("showcaseEditor.getValue()").toString().contains("Hello from a snippet"));
+      assertEquals("\"Hello from a snippet\"", page.evaluate("showcaseEditor.getSelectedText()"));
+      page.keyboard().insertText("42");
+      page.keyboard().press("Tab");
+      assertTrue(
+          page.evaluate("showcaseEditor.getValue()")
+              .toString()
+              .contains("System.out.println(42);"));
+      page.locator("#java").click();
+      String original = page.evaluate("showcaseEditor.getValue()").toString();
+      page.locator("#editor-host .ace_text-input").focus();
+      page.keyboard().insertText("// history test\n");
+      page.locator("#undo").click();
+      assertEquals(original, page.evaluate("showcaseEditor.getValue()"));
+      page.locator("#redo").click();
+      assertTrue(page.evaluate("showcaseEditor.getValue()").toString().contains("// history test"));
+      page.locator("#live").click();
+      page.evaluate("showcaseEditor.setValue('',1)");
+      page.locator("#editor-host .ace_text-input").focus();
+      page.keyboard().type("pri");
+      page.waitForSelector(".ace_autocomplete");
+      page.waitForFunction(
+          "document.querySelector('.ace_autocomplete').textContent.includes('println')");
+      page.keyboard().press("Escape");
+      page.locator("#live").click();
       page.locator("#json").click();
       assertEquals("project.json", page.locator("#filename").textContent());
-      page.locator(".ace_text-input").press("ControlOrMeta+A");
+      page.locator("#editor-host .ace_text-input").press("ControlOrMeta+A");
       page.keyboard().insertText("{\"edited\":true}");
       page.locator("#save").click();
       assertTrue(page.locator("#output").textContent().contains("15 characters"));
@@ -102,6 +147,10 @@ public class EditorDemoIT {
       }
       assertEquals(1, page.locator("script[src$='/ace.js']").count());
       assertEquals(1, page.locator("script[src$='/mode-java.js']").count());
+      assertEquals(1, page.locator("script[src$='/ext-searchbox.js']").count());
+      assertEquals(1, page.locator("script[src$='/snippets/java.js']").count());
+      assertEquals(true, page.evaluate("showcaseEditor.getOption('relativeLineNumbers')"));
+      assertEquals(true, page.evaluate("showcaseEditor.getOption('showInvisibles')"));
       assertTrue(
           page.evaluate("ace.config.get('workerPath')").toString().endsWith("webjars/ace/1.45.2/"));
       int before = Integer.parseInt(page.locator("#changes").textContent());
@@ -130,6 +179,15 @@ public class EditorDemoIT {
           "document.querySelector('#output').textContent.includes('Unable to load editor resources')");
       assertEquals(0, missing.locator(".ace_editor").count());
       missing.close();
+      Page missingExtension = browser.newPage();
+      missingExtension.route(
+          "**/ext-searchbox.js",
+          r -> r.fulfill(new Route.FulfillOptions().setStatus(404).setBody("missing extension")));
+      missingExtension.navigate("http://127.0.0.1:" + server.getAddress().getPort() + "/project/");
+      missingExtension.waitForFunction(
+          "document.querySelector('#output').textContent.includes('Unable to load editor resources')");
+      assertEquals(0, missingExtension.locator(".ace_editor").count());
+      missingExtension.close();
     } finally {
       server.stop(0);
     }
