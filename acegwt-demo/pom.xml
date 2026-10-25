@@ -83,6 +83,11 @@
                   <directory>src/main/webapp</directory>
                 </resource>
                 <resource>
+                  <directory>${project.basedir}/..</directory>
+                  <targetPath>legal/project</targetPath>
+                  <includes><include>LICENSE</include><include>NOTICE</include></includes>
+                </resource>
+                <resource>
                   <directory>${project.build.directory}/webjar-assets/META-INF/resources</directory>
                 </resource>
               </resources>

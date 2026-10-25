@@ -90,3 +90,5 @@ This preserves the upstream Java package and most public method shapes, but is n
 - Ace assets are pinned to npm `ace-builds@1.45.2`, sourced from `src-min-noconflict`. `upstream/ace-assets.json` records SHA-256 checksums.
 
 TeaVM adaptation and showcase work are maintained separately from the credited upstream projects.
+
+The built showcase includes a visible **Licenses and notices** link and ships the full upstream license texts alongside its JavaScript. `legal/runtime/provenance.json` records the sources and checksums of runtime notices; refresh these copies when upgrading dependencies. Keep the complete `target/site` directory when publishing or redistributing the showcase.

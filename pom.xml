@@ -13,6 +13,13 @@
   <name>AceTea</name>
   <description>AceGWT-compatible editor API for TeaVM</description>
   <url>https://github.com/instanto-io/acetea</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/license/mit</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
