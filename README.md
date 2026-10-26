@@ -1,4 +1,11 @@
-# AceTea
+# AceTea — alpha TeaVM port
+
+> **Alpha / experimental — `0.1.0-SNAPSHOT`.** AceTea is an early TeaVM port for
+> evaluation and integration testing. Its Java bindings, packaging and build setup
+> may change before a stable release. The showcase and passing browser tests cover
+> the demonstrated features; they do not establish production readiness or full
+> AceGWT/Ace compatibility. This status applies to the port, separately from the
+> bundled Ace editor.
 
 AceTea is a TeaVM port of [Dave Hovemeyer's AceGWT](https://github.com/daveho/AceGWT), with the original `edu.ycp.cs.dh.acegwt.client.ace` package and Java-facing editor API. Based on upstream commit `b0796a534c05af17a345b9ff48fa2772844547c0`; original sources and their checksums are retained in `upstream/`.
 
@@ -21,24 +28,102 @@ Java/JSON/SQL editing, custom Java completion, annotations and markers, commands
 selection, themes, read-only mode, live completion, snippet tab stops, search/replace,
 undo/redo, whitespace, relative line numbers and editor recreation. Save stores a snapshot
 in memory for this session. The diagnostic button displays an example warning.
+The hosted showcase is the easiest way to evaluate the alpha without setting up
+the build environment.
 
-`scripts/publish-showcase.sh` builds and verifies the WebJar and Java library on
-a machine with access to the Instanto Maven registry, pushes only the static
-showcase to the `showcase` branch, and dispatches its GitHub Pages deployment.
-The deployed `build-info.json` records the source commit. The optional full-build
-workflow needs an `instanto-container` runner with registry access; GitHub-hosted
-runners cannot reach that private registry.
+## Build and run the alpha
 
-## Build and run
+The repository currently depends on the **Instanto snapshot toolchain**. A fresh
+checkout is not a self-contained build using only Maven Central. Access to the
+Instanto package registry, or a local Maven repository containing the required
+parent, compatibility and toolchain artifacts, is needed before Maven can build it.
 
-Requires JDK 21, Maven, and the Instanto TeaVM parent/compat artifacts available in your Maven repository. This uses the same patched TeaVM toolchain as the sibling ports.
+### Prerequisites
+
+- **JDK 21** to run Maven and the build plugins. Check `mvn --version` reports the
+  intended Java installation; set `JAVA_HOME` if needed. The module POMs target
+  Java 17 bytecode, which is separate from the JDK used to run the build.
+- **Maven**, installed locally; this repository does not include a Maven wrapper.
+- The `io.instanto:instanto-teavm-pom:0.1.0-SNAPSHOT` parent,
+  `io.instanto:gwt-user-compat:0.1.0-SNAPSHOT` and their transitive toolchain
+  dependencies. The inherited build currently uses patched **TeaVM 0.16.0**.
+  Use the matching Instanto parent/toolchain rather than substituting an arbitrary
+  stock TeaVM version.
+- **Chromium and WebKit binaries for the project's Playwright version** to run
+  browser verification. The installation command below uses the Java test
+  dependency declared in the demo POM (currently Playwright 1.56.0).
+- **Python 3** only if using the example local HTTP server below.
+
+The Ace 1.45.2 assets are already committed in `acetea-webjar`; building the port
+requires no npm installation or runtime CDN download. Maven dependencies and
+Playwright browser binaries still need to be downloaded unless already cached.
+
+### Configure dependency access
+
+[`.github/maven-settings.xml`](.github/maven-settings.xml) provides the snapshot
+repository and plugin repository configuration, including the repository needed
+to resolve the parent POM. It reads credentials from `FORGEJO_PACKAGE_USER` and
+`FORGEJO_PACKAGE_TOKEN`. Set those environment variables using credentials with
+package read access before running the commands below. Network access to
+`packages.instanto.io` is also required; credentials alone do not provide it.
+Do not commit credentials to this repository.
+
+The examples explicitly select that settings file. If your existing Maven settings
+already provide equivalent access, omit `--settings .github/maven-settings.xml`.
+If you cannot access the registry, the alternatives are the hosted showcase or
+building/installing the matching Instanto dependency projects locally according
+to their own instructions. This repository does not bootstrap those projects.
+
+### Build, install browsers, then verify
+
+Run these commands from the repository root. The first step installs all reactor
+artifacts locally so the separate browser installer can resolve the demo's
+`acegwt-compat` and WebJar dependencies. **It skips tests and is not verification.**
 
 ```sh
-mvn verify
-python3 -m http.server 8792 --directory acegwt-demo/target/site
+mvn --settings .github/maven-settings.xml --batch-mode --no-transfer-progress \
+    clean install -DskipTests
+
+mvn --settings .github/maven-settings.xml --batch-mode --no-transfer-progress \
+    -f acegwt-demo/pom.xml \
+    org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
+    -Dexec.classpathScope=test \
+    -Dexec.mainClass=com.microsoft.playwright.CLI \
+    -Dexec.args="install chromium webkit"
+
+mvn --settings .github/maven-settings.xml --batch-mode --no-transfer-progress verify
 ```
 
-Open http://localhost:8792. `verify` runs the showcase in Chromium and WebKit with Playwright; install their browser binaries first if needed. `mvn package -DskipTests` builds without browser verification.
+On supported Linux hosts that also need browser system libraries, use
+`-Dexec.args="install --with-deps chromium webkit"` for the installer step; this
+may require permission to install OS packages. If you set `PLAYWRIGHT_BROWSERS_PATH`,
+use the same value for installation and verification. Reinstall the matching
+binaries when changing the Playwright dependency version.
+
+Once dependencies and browser binaries are available, subsequent full checks can
+use `mvn --settings .github/maven-settings.xml clean verify`. Use `-U` when you
+intentionally need to refresh changing snapshot dependencies. Snapshot versions
+are mutable, so this alpha does not yet promise reproducible dependency versions
+across build dates.
+
+### Run the showcase locally
+
+After a successful build:
+
+```sh
+python3 -m http.server 8792 --bind 127.0.0.1 --directory acegwt-demo/target/site
+```
+
+Open [http://localhost:8792](http://localhost:8792). Serve the generated site over
+HTTP; opening `index.html` directly as a local file is not the supported setup.
+Keep the entire `target/site` directory, including `webjars/` and `legal/`.
+
+For a build without browser tests, use
+`mvn --settings .github/maven-settings.xml package -DskipTests`. This produces
+artifacts and the site, but does **not** verify browser behavior. Maven `test`
+alone also does not run the Failsafe browser integration tests; use `verify`.
+
+### Verification and troubleshooting
 
 The tests check Java API contracts, editing, annotations and markers, custom completion, selection, read-only state, and repeated native-editor destruction/recreation without duplicate change callbacks.
 Java contracts also cover search flags and range positions, replacement counts, regex searches,
@@ -47,6 +132,36 @@ Browser interactions check search UI, live completion, accessible input labels, 
 tab stops, history and display options, including restored configuration after recreation.
 They also exercise WebJar loading under a nested URL, deduplicated scripts and a
 missing-resource failure message. Desktop and mobile screenshots are written to `acegwt-demo/target/`.
+
+Common setup failures:
+
+| Symptom | Check |
+| --- | --- |
+| Non-resolvable parent or missing Instanto snapshot artifact | Repository settings, registry connectivity and read credentials; Maven must resolve the parent before reading its inherited configuration. |
+| Browser executable missing | Run the Playwright installer above using the same browser cache path as the tests. |
+| Browser fails to launch on Linux due to missing libraries | Install the browser's OS dependencies using the supported `--with-deps` setup. |
+| Showcase reports missing Ace resources | Serve the complete generated site and check its `webjars/ace/1.45.2/` URL; loading the Java library alone does not serve static resources. |
+| Browser contract fails | Inspect `acegwt-demo/target/failsafe-reports/`; desktop/mobile screenshots are produced when the test reaches those steps. |
+
+## Publishing the showcase (maintainers)
+
+Publishing is separate from building locally. `scripts/publish-showcase.sh`
+requires a clean, committed checkout, JDK 21, Maven, installed browser binaries,
+registry access and an authenticated GitHub CLI (`gh`) with permission to push
+and dispatch workflows. **The script uses Maven's default settings**, so configure
+equivalent registry access in your normal Maven settings before invoking it; it
+does not automatically select `.github/maven-settings.xml`.
+
+The script runs `mvn clean verify`, pushes the generated static site to the
+`showcase` branch, and dispatches the GitHub Pages workflow. Its `build-info.json`
+records the source commit. This publishes a showcase, not a stable library release
+or Maven artifacts.
+
+The full-build workflow is manually dispatched and requires a self-hosted
+`instanto-container` runner with registry access. It installs the matching browser
+binaries, verifies the build and deploys Pages from `main`. The separate static-site
+workflow publishes the already-built `showcase` branch on a GitHub-hosted runner.
+A successful static-site deployment alone is not a fresh Java build or test run.
 
 ## Using the widget
 
@@ -135,6 +250,11 @@ See the [Ace editor options](https://ace.c9.io/api/interfaces/ace.Ace.EditorOpti
 and [editor API](https://ace.c9.io/api/classes/ace.Editor.html) for underlying behavior.
 
 ## Scope and compatibility
+
+**Alpha compatibility target:** retain the AceGWT Java API where practical while
+adding access to modern Ace features. API stability and complete behavioral parity
+are not yet guaranteed. Evaluate the specific methods, modes and extensions your
+application needs against the pinned runtime before adopting the port.
 
 This preserves the upstream Java package and most public method shapes, but is not a binary-compatible GWT artifact. Code relying on arbitrary GWT JavaScriptObject overlay casts should use the provided wrappers. Modes/themes must be loaded before selecting them by name. Browser verification covers the showcased paths, not every Ace option, mode or extension. Remote completion services and persistent storage are application responsibilities.
 This is a curated API, not complete coverage of Ace: independent session management,
