@@ -114,13 +114,20 @@ public class AceCompletionValue extends AceCompletion {
    * @return native JS object
    */
   JavaScriptObject toJsObject() {
-    return JavaScriptObject.of(toJsObjectNative(caption, value, score, meta, tooltip));
+    return toJsObjectNative(caption, value, score, meta, tooltip);
   }
 
-  @org.teavm.jso.JSBody(
-      params = {"caption", "value", "score", "meta", "tooltip"},
-      script =
-          "\n\t\t\n\t\t\n\t\t\treturn {\n\t\t\t\tcaption: caption,\n\t\t\t\tvalue: value,\n\t\t\t\tscore: score,\n\t\t\t\tmeta: meta,\n\t\t\t    aceGwtHtmlTooltip: tooltip\n\t\t\t};\n\n\t")
-  private static native org.teavm.jso.JSObject toJsObjectNative(
-      String caption, String value, int score, String meta, String tooltip);
+  private static native JavaScriptObject toJsObjectNative(
+      String caption, String value, int score, String meta, String tooltip) /*-{
+
+
+			return {
+				caption: caption,
+				value: value,
+				score: score,
+				meta: meta,
+			    aceGwtHtmlTooltip: tooltip
+			};
+
+	 }-*/;
 }

@@ -1,8 +1,9 @@
 package io.instanto.acegwt.demo;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.RootPanel;
 import edu.ycp.cs.dh.acegwt.client.ace.*;
-import org.teavm.jso.*;
+import jsinterop.annotations.JsFunction;
 
 /** The showcase's editor operations and callbacks all originate in Java. */
 public final class EditorDemo {
@@ -352,29 +353,21 @@ public final class EditorDemo {
     if (!ok) throw new IllegalStateException("Ace contract: " + detail);
   }
 
-  @JSFunctor
-  private interface Action extends JSObject {
+  @JsFunction
+  private interface Action {
     void run();
   }
 
-  @JSBody(
-      params = {"id", "a"},
-      script = "document.getElementById(id).addEventListener('click',a);")
-  private static native void click(String id, Action a);
+  private static native void click(
+      String id, Action a) /*-{ $doc.getElementById(id).addEventListener('click',a); }-*/;
 
-  @JSBody(params = "a", script = "window.addEventListener('resize',a);")
-  private static native void onResize(Action a);
+  private static native void onResize(Action a) /*-{ $wnd.addEventListener('resize',a); }-*/;
 
-  @JSBody(
-      params = {"id", "value"},
-      script = "document.getElementById(id).textContent=value;")
-  private static native void text(String id, String value);
+  private static native void text(
+      String id, String value) /*-{ $doc.getElementById(id).textContent=value; }-*/;
 
-  @JSBody(
-      params = {"key", "value"},
-      script = "document.body.setAttribute(key,value);")
-  private static native void attribute(String key, String value);
+  private static native void attribute(
+      String key, String value) /*-{ $doc.body.setAttribute(key,value); }-*/;
 
-  @JSBody(params = "e", script = "window.showcaseEditor=e;")
-  private static native void expose(JSObject e);
+  private static native void expose(JavaScriptObject e) /*-{ $wnd.showcaseEditor=e; }-*/;
 }

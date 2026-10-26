@@ -175,13 +175,17 @@ public class AceCompletionSnippet extends AceCompletion {
    * @return native JS object
    */
   JavaScriptObject toJsObject() {
-    return JavaScriptObject.of(toJsObjectNative(caption, snippet, score, meta, tooltip));
+    return toJsObjectNative(caption, snippet, score, meta, tooltip);
   }
 
-  @org.teavm.jso.JSBody(
-      params = {"caption", "snippet", "score", "meta", "tooltip"},
-      script =
-          "\n\t\treturn {\n\t\t\tcaption: caption,\n\t\t\tsnippet: snippet,\n\t\t\tscore: score,\n\t\t\tmeta: meta,\n\t\t\taceGwtHtmlTooltip: tooltip\n\t\t};\n\t")
-  private static native org.teavm.jso.JSObject toJsObjectNative(
-      String caption, String snippet, int score, String meta, String tooltip);
+  private static native JavaScriptObject toJsObjectNative(
+      String caption, String snippet, int score, String meta, String tooltip) /*-{
+		return {
+			caption: caption,
+			snippet: snippet,
+			score: score,
+			meta: meta,
+			aceGwtHtmlTooltip: tooltip
+		};
+	 }-*/;
 }

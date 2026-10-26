@@ -38,10 +38,6 @@ import java.util.Map;
  * @see <a href="http://ace.ajax.org/">Ajax.org Code Editor</a>
  */
 public class AceEditor extends Composite implements RequiresResize, HasText, TakesValue<String> {
-  public void setSize(String width, String height) {
-    getElement().getStyle().setProperty("width", width);
-    getElement().getStyle().setProperty("height", height);
-  }
 
   // Used to generate unique element ids for Ace widgets.
   private static int nextId = 0;
@@ -50,7 +46,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
 
   private JavaScriptObject editor;
 
-  private org.teavm.jso.JSObject annotations = AceNative.array();
+  private JavaScriptObject annotations = AceNative.array();
   private final int registryId = nextId;
   private static final Map<Integer, AceEditor> EDITORS = new HashMap<>();
 
@@ -88,7 +84,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    */
   public void startEditor() {
     if (editor != null) return;
-    editor = JavaScriptObject.of(createEditor(divElement.unwrap(), registryId));
+    editor = createEditor(divElement, registryId);
     EDITORS.put(registryId, this);
     redisplay();
   }
@@ -100,14 +96,14 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * around the problem by forcing the underlying editor to redisplay itself fully. (?)
    */
   public void redisplay() {
-    redisplayBridge1(editor.unwrap());
+    redisplayBridge1(editor);
   }
 
   /** Cleans up the entire editor. */
   public void destroy() {
     if (editor == null) return;
     removeAllMarkers();
-    destroyEditor(editor.unwrap());
+    destroyEditor(editor);
     editor = null;
     selection = null;
     resetAnnotations();
@@ -129,7 +125,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param themeName the theme name (e.g., "twilight")
    */
   public void setThemeByName(String themeName) {
-    setThemeByNameBridge2(editor.unwrap(), themeName);
+    setThemeByNameBridge2(editor, themeName);
   }
 
   /**
@@ -147,7 +143,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param shortModeName name of mode (e.g., "eclipse")
    */
   public void setModeByName(String shortModeName) {
-    setModeByNameBridge3(editor.unwrap(), shortModeName);
+    setModeByNameBridge3(editor, shortModeName);
   }
 
   /**
@@ -156,7 +152,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param userWorker true to enable a worker otherwise false
    */
   public void setUseWorker(boolean useWorker) {
-    setUseWorkerBridge4(editor.unwrap(), useWorker);
+    setUseWorkerBridge4(editor, useWorker);
   }
 
   /**
@@ -165,11 +161,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param callback the change event handler
    */
   public void addOnChangeHandler(AceEditorCallback callback) {
-    listen(
-        editor.unwrap(),
-        "session",
-        "change",
-        e -> callback.invokeAceCallback(JavaScriptObject.of(e)));
+    listen(editor, "session", "change", e -> callback.invokeAceCallback(e));
   }
 
   /**
@@ -178,11 +170,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param callback the cursor position change event handler
    */
   public void addOnCursorPositionChangeHandler(AceEditorCallback callback) {
-    listen(
-        editor.unwrap(),
-        "selection",
-        "changeCursor",
-        e -> callback.invokeAceCallback(JavaScriptObject.of(e)));
+    listen(editor, "selection", "changeCursor", e -> callback.invokeAceCallback(e));
   }
 
   /**
@@ -191,7 +179,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return font size
    */
   public int getFontSize() {
-    return getFontSizeBridge5(editor.unwrap());
+    return getFontSizeBridge5(editor);
   }
 
   /**
@@ -200,7 +188,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param fontSize the font size to set, e.g., "16px"
    */
   public void setFontSize(String fontSize) {
-    setFontSizeBridge6(editor.unwrap(), fontSize);
+    setFontSizeBridge6(editor, fontSize);
   }
 
   /**
@@ -209,7 +197,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param fontSize the font size to set, e.g., 16
    */
   public void setFontSize(int fontSize) {
-    setFontSizeBridge7(editor.unwrap(), fontSize);
+    setFontSizeBridge7(editor, fontSize);
   }
 
   /**
@@ -218,12 +206,12 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return the text in the editor
    */
   public String getText() {
-    return getTextBridge8(editor.unwrap());
+    return getTextBridge8(editor);
   }
 
   /** Causes the editor to gain input focus. */
   public void focus() {
-    focusBridge9(editor.unwrap());
+    focusBridge9(editor);
   }
 
   /**
@@ -232,7 +220,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return The number of lines in the editor.
    */
   public int getLineCount() {
-    return getLineCountBridge10(editor.unwrap());
+    return getLineCountBridge10(editor);
   }
 
   /**
@@ -241,7 +229,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param text the text to set in the editor
    */
   public void setText(String text) {
-    setTextBridge11(editor.unwrap(), text);
+    setTextBridge11(editor, text);
   }
 
   /**
@@ -251,7 +239,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return the line of text at that row number
    */
   public String getLine(int row) {
-    return getLineBridge12(editor.unwrap(), row);
+    return getLineBridge12(editor, row);
   }
 
   /**
@@ -260,7 +248,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param text text to insert at the cursor
    */
   public void insertAtCursor(String text) {
-    insertAtCursorBridge13(editor.unwrap(), text);
+    insertAtCursorBridge13(editor, text);
   }
 
   /**
@@ -269,7 +257,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return the current cursor position
    */
   public AceEditorCursorPosition getCursorPosition() {
-    return AceNative.position(AceNative.callObject(editor.unwrap(), "getCursorPosition"));
+    return AceNative.position(AceNative.callObject(editor, "getCursorPosition"));
   }
 
   private AceEditorCursorPosition getCursorPositionImpl(final double row, final double column) {
@@ -287,7 +275,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
   }
 
   private int getIndexFromPositionImpl(JavaScriptObject jsPosition) {
-    return getIndexFromPositionImplBridge14(editor.unwrap(), jsPosition.unwrap());
+    return getIndexFromPositionImplBridge14(editor, jsPosition);
   }
 
   /**
@@ -297,7 +285,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return A position object showing the row and column of the supplied index in the document
    */
   public AceEditorCursorPosition getPositionFromIndex(int index) {
-    return AceNative.position(positionFromIndex(editor.unwrap(), index));
+    return AceNative.position(positionFromIndex(editor, index));
   }
 
   /**
@@ -306,7 +294,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param useSoftTabs true if soft tabs should be used, false otherwise
    */
   public void setUseSoftTabs(boolean useSoftTabs) {
-    setUseSoftTabsBridge15(editor.unwrap(), useSoftTabs);
+    setUseSoftTabsBridge15(editor, useSoftTabs);
   }
 
   /**
@@ -315,7 +303,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param tabSize the tab size to set
    */
   public void setTabSize(int tabSize) {
-    setTabSizeBridge16(editor.unwrap(), tabSize);
+    setTabSizeBridge16(editor, tabSize);
   }
 
   /**
@@ -324,7 +312,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param line the line to go to
    */
   public void gotoLine(int line) {
-    gotoLineBridge17(editor.unwrap(), line);
+    gotoLineBridge17(editor, line);
   }
 
   /**
@@ -334,7 +322,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    *     is hidden when not needed
    */
   public void setHScrollBarAlwaysVisible(boolean hScrollBarAlwaysVisible) {
-    setHScrollBarAlwaysVisibleBridge18(editor.unwrap(), hScrollBarAlwaysVisible);
+    setHScrollBarAlwaysVisibleBridge18(editor, hScrollBarAlwaysVisible);
   }
 
   /**
@@ -343,7 +331,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param showGutter true if the gutter should be shown, false if it should be hidden
    */
   public void setShowGutter(boolean showGutter) {
-    setShowGutterBridge19(editor.unwrap(), showGutter);
+    setShowGutterBridge19(editor, showGutter);
   }
 
   /**
@@ -353,7 +341,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    *     read-write
    */
   public void setReadOnly(boolean readOnly) {
-    setReadOnlyBridge20(editor.unwrap(), readOnly);
+    setReadOnlyBridge20(editor, readOnly);
   }
 
   /**
@@ -362,7 +350,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param highlightSelectedWord true to highlight currently selected word, false otherwise
    */
   public void setHighlightSelectedWord(boolean highlightSelectedWord) {
-    setHighlightSelectedWordBridge21(editor.unwrap(), highlightSelectedWord);
+    setHighlightSelectedWordBridge21(editor, highlightSelectedWord);
   }
 
   /**
@@ -371,7 +359,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param showPrintMargin true if the print margin should be shown, false otherwise
    */
   public void setShowPrintMargin(boolean showPrintMargin) {
-    setShowPrintMarginBridge22(editor.unwrap(), showPrintMargin);
+    setShowPrintMarginBridge22(editor, showPrintMargin);
   }
 
   /**
@@ -385,12 +373,12 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    */
   public void addAnnotation(
       final int row, final int column, final String text, final AceAnnotationType type) {
-    AceNative.push(annotations, AceAnnotation.create(row, column, text, type.getName()).unwrap());
+    AceNative.push(annotations, AceAnnotation.create(row, column, text, type.getName()));
   }
 
   /** Set any annotations which have been added via <code>addAnnotation</code> on the editor */
   public void setAnnotations() {
-    applyAnnotations(editor.unwrap(), annotations);
+    applyAnnotations(editor, annotations);
   }
 
   /**
@@ -399,7 +387,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    */
   public void clearAnnotations() {
     resetAnnotations();
-    applyAnnotations(editor.unwrap(), annotations);
+    applyAnnotations(editor, annotations);
   }
 
   /** Reset any annotations in the local <code>annotations</code> JsArray<AceAnnotation> */
@@ -468,7 +456,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
 
   private void execCommandHidden(String command, Object args) {
     Object value = args instanceof AceCommandArgs ? ((AceCommandArgs) args).getValue() : args;
-    execute(editor.unwrap(), command, AceNative.argument(value));
+    execute(editor, command, AceNative.argument(value));
   }
 
   /**
@@ -478,7 +466,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    *     "replaceall"
    */
   public void removeCommandByName(String command) {
-    removeCommandByNameBridge23(editor.unwrap(), command);
+    removeCommandByNameBridge23(editor, command);
   }
 
   /**
@@ -488,8 +476,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return command description
    */
   public AceCommandDescription getCommandDescription(String command) {
-    return AceCommandDescription.fromJavaScript(
-        JavaScriptObject.of(command(editor.unwrap(), command)));
+    return AceCommandDescription.fromJavaScript(command(editor, command));
   }
 
   /**
@@ -498,7 +485,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return names of all Ace commands
    */
   public List<String> listCommands() {
-    return java.util.Arrays.asList(commands(editor.unwrap()));
+    return java.util.Arrays.asList(commands(editor));
   }
 
   /**
@@ -507,7 +494,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param description command description
    */
   public void addCommand(AceCommandDescription description) {
-    addNativeCommand(editor.unwrap(), description.toJavaScript(this).unwrap());
+    addNativeCommand(editor, description.toJavaScript(this));
   }
 
   /**
@@ -516,7 +503,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param useWrapMode true if word wrap should be used, false otherwise
    */
   public void setUseWrapMode(boolean useWrapMode) {
-    setUseWrapModeBridge24(editor.unwrap(), useWrapMode);
+    setUseWrapModeBridge24(editor, useWrapMode);
   }
 
   /* (non-Javadoc)
@@ -543,7 +530,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param b true if autocomplete should be enabled, false if not
    */
   public void setAutocompleteEnabled(boolean b) {
-    setAutocompleteEnabledBridge25(editor.unwrap(), b);
+    setAutocompleteEnabledBridge25(editor, b);
   }
 
   /**
@@ -577,7 +564,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
               target,
               AceEditorCursorPosition.create(row, column),
               prefix,
-              wrapCompletionCallback(JavaScriptObject.of(callback)));
+              wrapCompletionCallback(callback));
         });
   }
 
@@ -591,7 +578,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return The marker ID. This id can be then use to remove a marker from the editor.
    */
   public int addMarker(AceRange range, String clazz, AceMarkerType type, boolean inFront) {
-    int id = marker(editor.unwrap(), range.unwrap(), clazz, type.getName(), inFront);
+    int id = marker(editor, range, clazz, type.getName(), inFront);
     addMarker(id, range);
     return id;
   }
@@ -606,7 +593,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @return The marker ID. This id can be then use to remove a marker from the editor.
    */
   public int addFloatingMarker(AceRange range, String clazz, AceMarkerType type) {
-    anchor(editor.unwrap(), range.unwrap());
+    anchor(editor, range);
     return addMarker(range, clazz, type, false);
   }
 
@@ -616,7 +603,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
    * @param markerId the marker ID.
    */
   public void removeMarker(int markerId) {
-    removeNativeMarker(editor.unwrap(), markerId);
+    removeNativeMarker(editor, markerId);
     removeRegisteredMarker(markerId);
   }
 
@@ -657,7 +644,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
   }
 
   private JavaScriptObject getSelectionJS() {
-    return JavaScriptObject.of(getSelectionJSBridge27(editor.unwrap()));
+    return getSelectionJSBridge27(editor);
   }
 
   /**
@@ -723,7 +710,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
 
   /** Find and select a match, or return null. Options do not leak from previous searches. */
   public AceRange find(String needle, AceSearchOptions options) {
-    return AceRange.wrap(findNative(unwrapEditor(), searchOptions(needle, options)));
+    return findNative(unwrapEditor(), searchOptions(needle, options));
   }
 
   /** Find literal text, case-insensitively, wrapping at the end of the document. */
@@ -737,7 +724,7 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
     return replaceAllNative(unwrapEditor(), replacement, searchOptions(needle, options));
   }
 
-  private static org.teavm.jso.JSObject searchOptions(String needle, AceSearchOptions options) {
+  private static JavaScriptObject searchOptions(String needle, AceSearchOptions options) {
     java.util.Objects.requireNonNull(needle, "needle");
     if (needle.isEmpty()) throw new IllegalArgumentException("Empty search text");
     return java.util.Objects.requireNonNull(options, "options").toNative(needle);
@@ -809,71 +796,54 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
     booleanOption(unwrapEditor(), "relativeLineNumbers", enabled);
   }
 
-  @org.teavm.jso.JSBody(params = "name", script = "return !!ace.require(name);")
-  private static native boolean hasModule(String name);
+  private static native boolean hasModule(String name) /*-{ return !!$wnd.ace.require(name); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "name", "value"},
-      script = "e.setOption(name,value);")
-  private static native void booleanOption(org.teavm.jso.JSObject e, String name, boolean value);
+  private static native void booleanOption(
+      JavaScriptObject e, String name, boolean value) /*-{ e.setOption(name,value); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "name", "value"},
-      script = "e.setOption(name,value);")
-  private static native void numberOption(org.teavm.jso.JSObject e, String name, int value);
+  private static native void numberOption(
+      JavaScriptObject e, String name, int value) /*-{ e.setOption(name,value); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "name", "value"},
-      script = "e.setOption(name,value);")
-  private static native void stringOption(org.teavm.jso.JSObject e, String name, String value);
+  private static native void stringOption(
+      JavaScriptObject e, String name, String value) /*-{ e.setOption(name,value); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "snippet"},
-      script = "ace.require('ace/snippets').snippetManager.insertSnippet(e,snippet);")
-  private static native void insertNativeSnippet(org.teavm.jso.JSObject e, String snippet);
+  private static native void insertNativeSnippet(
+      JavaScriptObject e,
+      String
+          snippet) /*-{ $wnd.ace.require('ace/snippets').snippetManager.insertSnippet(e,snippet); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "options"},
-      script = "return e.find(options) || null;")
-  private static native org.teavm.jso.JSObject findNative(
-      org.teavm.jso.JSObject e, org.teavm.jso.JSObject options);
+  private static native AceRange findNative(
+      JavaScriptObject e, JavaScriptObject options) /*-{ return e.find(options) || null; }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "replacement", "options"},
-      script = "return e.replaceAll(replacement,options);")
   private static native int replaceAllNative(
-      org.teavm.jso.JSObject e, String replacement, org.teavm.jso.JSObject options);
+      JavaScriptObject e,
+      String replacement,
+      JavaScriptObject options) /*-{ return e.replaceAll(replacement,options); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "replace"},
-      script = "ace.require('ace/ext/searchbox').Search(e,replace);")
-  private static native void showNativeSearch(org.teavm.jso.JSObject e, boolean replace);
+  private static native void showNativeSearch(
+      JavaScriptObject e,
+      boolean replace) /*-{ $wnd.ace.require('ace/ext/searchbox').Search(e,replace); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "redo"},
-      script = "e.session.markUndoGroup(); if(redo) e.redo(); else e.undo();")
-  private static native void historyAction(org.teavm.jso.JSObject e, boolean redo);
+  private static native void historyAction(
+      JavaScriptObject e,
+      boolean redo) /*-{ e.session.markUndoGroup(); if(redo) e.redo(); else e.undo(); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "redo"},
-      script =
-          "e.session.markUndoGroup(); var u=e.session.getUndoManager(); return redo ? u.hasRedo() : u.hasUndo();")
-  private static native boolean hasHistory(org.teavm.jso.JSObject e, boolean redo);
+  private static native boolean hasHistory(
+      JavaScriptObject e,
+      boolean
+          redo) /*-{ e.session.markUndoGroup(); var u=e.session.getUndoManager(); return redo ? u.hasRedo() : u.hasUndo(); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = "e",
-      script = "e.session.markUndoGroup(); e.session.getUndoManager().startNewGroup();")
-  private static native void markUndoGroup(org.teavm.jso.JSObject e);
+  private static native void markUndoGroup(
+      JavaScriptObject
+          e) /*-{ e.session.markUndoGroup(); e.session.getUndoManager().startNewGroup(); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = "e",
-      script = "e.session.markUndoGroup(); e.session.getUndoManager().reset();")
-  private static native void resetHistory(org.teavm.jso.JSObject e);
+  private static native void resetHistory(
+      JavaScriptObject e) /*-{ e.session.markUndoGroup(); e.session.getUndoManager().reset(); }-*/;
 
-  /** Underlying editor for optional TeaVM integrations. Available after startEditor(). */
-  public org.teavm.jso.JSObject unwrapEditor() {
+  /** Underlying editor for optional native integrations. Available after startEditor(). */
+  public JavaScriptObject unwrapEditor() {
     if (editor == null) throw new IllegalStateException("Editor is not started");
-    return editor.unwrap();
+    return editor;
   }
 
   public boolean isStarted() {
@@ -886,221 +856,213 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
     super.onUnload();
   }
 
-  @org.teavm.jso.JSBody(
-      params = {"element", "id"},
-      script = "var e=ace.edit(element); e.session.setUseWorker(false); e.__aceGwtId=id; return e;")
-  private static native org.teavm.jso.JSObject createEditor(org.teavm.jso.JSObject element, int id);
+  private static native JavaScriptObject createEditor(
+      Element element,
+      int
+          id) /*-{ var e=$wnd.ace.edit(element); e.session.setUseWorker(false); e.__aceGwtId=id; return e; }-*/;
 
-  @org.teavm.jso.JSBody(params = "e", script = "e.destroy(); e.container.textContent='';")
-  private static native void destroyEditor(org.teavm.jso.JSObject e);
+  private static native void destroyEditor(
+      JavaScriptObject e) /*-{ e.destroy(); e.container.textContent=''; }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "target", "name", "listener"},
-      script = "(target==='session'?e.session:e.selection).on(name,listener);")
   private static native void listen(
-      org.teavm.jso.JSObject e, String target, String name, AceNative.Event listener);
+      JavaScriptObject e,
+      String target,
+      String name,
+      AceNative.Event
+          listener) /*-{ (target==='session'?e.session:e.selection).on(name,listener); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "i"},
-      script = "return e.session.doc.indexToPosition(i);")
-  private static native org.teavm.jso.JSObject positionFromIndex(org.teavm.jso.JSObject e, int i);
+  private static native JavaScriptObject positionFromIndex(
+      JavaScriptObject e, int i) /*-{ return e.session.doc.indexToPosition(i); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "a"},
-      script = "e.session.setAnnotations(a);")
-  private static native void applyAnnotations(org.teavm.jso.JSObject e, org.teavm.jso.JSObject a);
+  private static native void applyAnnotations(
+      JavaScriptObject e, JavaScriptObject a) /*-{ e.session.setAnnotations(a); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "c", "a"},
-      script = "e.commands.exec(c,e,a); e.focus();")
-  private static native void execute(org.teavm.jso.JSObject e, String c, org.teavm.jso.JSObject a);
+  private static native void execute(
+      JavaScriptObject e,
+      String c,
+      JavaScriptObject a) /*-{ e.commands.exec(c,e,a); e.focus(); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "c"},
-      script = "return e.commands.commands[c] || null;")
-  private static native org.teavm.jso.JSObject command(org.teavm.jso.JSObject e, String c);
+  private static native JavaScriptObject command(
+      JavaScriptObject e, String c) /*-{ return e.commands.commands[c] || null; }-*/;
 
-  @org.teavm.jso.JSBody(params = "e", script = "return Object.keys(e.commands.commands);")
-  private static native String[] commands(org.teavm.jso.JSObject e);
+  private static native String[] commands(
+      JavaScriptObject e) /*-{ return Object.keys(e.commands.commands); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "c"},
-      script = "e.commands.addCommand(c);")
-  private static native void addNativeCommand(org.teavm.jso.JSObject e, org.teavm.jso.JSObject c);
+  private static native void addNativeCommand(
+      JavaScriptObject e, JavaScriptObject c) /*-{ e.commands.addCommand(c); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = "f",
-      script =
-          "ace.require('ace/ext/language_tools').addCompleter({getCompletions:function(e,s,p,prefix,cb){f(e.__aceGwtId,p.row,p.column,prefix,cb);},getDocTooltip:function(item){if(!item.docHTML && item.aceGwtHtmlTooltip)item.docHTML=item.aceGwtHtmlTooltip;}});")
-  private static native void addCompleter(AceNative.Completion f);
+  private static native void addCompleter(
+      AceNative.Completion
+          f) /*-{ $wnd.ace.require('ace/ext/language_tools').addCompleter({getCompletions:function(e,s,p,prefix,cb){f(e.__aceGwtId,p.row,p.column,prefix,cb);},getDocTooltip:function(item){if(!item.docHTML && item.aceGwtHtmlTooltip)item.docHTML=item.aceGwtHtmlTooltip;}}); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "r", "c", "t", "front"},
-      script = "return e.session.addMarker(r,c,t,front);")
   private static native int marker(
-      org.teavm.jso.JSObject e, org.teavm.jso.JSObject r, String c, String t, boolean front);
+      JavaScriptObject e,
+      JavaScriptObject r,
+      String c,
+      String t,
+      boolean front) /*-{ return e.session.addMarker(r,c,t,front); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "r"},
-      script =
-          "r.start=e.session.doc.createAnchor(r.start); r.end=e.session.doc.createAnchor(r.end);")
-  private static native void anchor(org.teavm.jso.JSObject e, org.teavm.jso.JSObject r);
+  private static native void anchor(
+      JavaScriptObject e,
+      JavaScriptObject
+          r) /*-{ r.start=e.session.doc.createAnchor(r.start); r.end=e.session.doc.createAnchor(r.end); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"e", "id"},
-      script = "e.session.removeMarker(id);")
-  private static native void removeNativeMarker(org.teavm.jso.JSObject e, int id);
+  private static native void removeNativeMarker(
+      JavaScriptObject e, int id) /*-{ e.session.removeMarker(id); }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script =
-          "\n\t\t\n\t\thandle.renderer.onResize(true);\n\t\thandle.renderer.updateFull();\n\t\thandle.resize();\n\t\thandle.focus();\n\t")
-  private static native void redisplayBridge1(org.teavm.jso.JSObject handle);
+  private static native void redisplayBridge1(JavaScriptObject handle) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "themeName"},
-      script = "\n\t\t\n\t\thandle.setTheme(\"ace/theme/\" + themeName);\n\t")
-  private static native void setThemeByNameBridge2(org.teavm.jso.JSObject handle, String themeName);
+		handle.renderer.onResize(true);
+		handle.renderer.updateFull();
+		handle.resize();
+		handle.focus();
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "shortModeName"},
-      script =
-          "\n\t\t\n\t\tvar modeName = \"ace/mode/\" + shortModeName;\n\t\tvar TheMode = window.ace.require(modeName).Mode;\n\t\thandle.getSession().setMode(new TheMode());\n\t")
+  private static native void setThemeByNameBridge2(JavaScriptObject handle, String themeName) /*-{
+
+		handle.setTheme("ace/theme/" + themeName);
+	 }-*/;
+
   private static native void setModeByNameBridge3(
-      org.teavm.jso.JSObject handle, String shortModeName);
+      JavaScriptObject handle, String shortModeName) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "useWorker"},
-      script =
-          "\n                \n                handle.getSession().setUseWorker(useWorker);\n        ")
-  private static native void setUseWorkerBridge4(org.teavm.jso.JSObject handle, boolean useWorker);
+		var modeName = "ace/mode/" + shortModeName;
+		var TheMode = $wnd.ace.require(modeName).Mode;
+		handle.getSession().setMode(new TheMode());
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\t\n\t\treturn handle.getFontSize();\n\t")
-  private static native int getFontSizeBridge5(org.teavm.jso.JSObject handle);
+  private static native void setUseWorkerBridge4(JavaScriptObject handle, boolean useWorker) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "fontSize"},
-      script = "\n\t\t\n\t\thandle.setFontSize(fontSize);\n\t")
-  private static native void setFontSizeBridge6(org.teavm.jso.JSObject handle, String fontSize);
+                handle.getSession().setUseWorker(useWorker);
+         }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "fontSize"},
-      script = "\n\t\t\n\t\thandle.setFontSize(fontSize);\n\t")
-  private static native void setFontSizeBridge7(org.teavm.jso.JSObject handle, int fontSize);
+  private static native int getFontSizeBridge5(JavaScriptObject handle) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\t\n\t\treturn handle.getSession().getValue();\n\t")
-  private static native String getTextBridge8(org.teavm.jso.JSObject handle);
+		return handle.getFontSize();
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\t\n\t\thandle.focus();\n\t")
-  private static native void focusBridge9(org.teavm.jso.JSObject handle);
+  private static native void setFontSizeBridge6(JavaScriptObject handle, String fontSize) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\t\n\t\treturn handle.session.getLength();\n\t")
-  private static native int getLineCountBridge10(org.teavm.jso.JSObject handle);
+		handle.setFontSize(fontSize);
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "text"},
-      script = "\n\t\t\n\t\thandle.getSession().setValue(text);\n\t")
-  private static native void setTextBridge11(org.teavm.jso.JSObject handle, String text);
+  private static native void setFontSizeBridge7(JavaScriptObject handle, int fontSize) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "row"},
-      script = "\n\t\t\n\t\treturn handle.getSession().getDocument().getLine(row);\n\t")
-  private static native String getLineBridge12(org.teavm.jso.JSObject handle, int row);
+		handle.setFontSize(fontSize);
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "text"},
-      script = "\n\t\t\n\t\thandle.insert(text);\n\t")
-  private static native void insertAtCursorBridge13(org.teavm.jso.JSObject handle, String text);
+  private static native String getTextBridge8(JavaScriptObject handle) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "jsPosition"},
-      script =
-          "\n\t\t\n\t\treturn handle.getSession().getDocument().positionToIndex(jsPosition);\n\t")
+		return handle.getSession().getValue();
+	 }-*/;
+
+  private static native void focusBridge9(JavaScriptObject handle) /*-{
+
+		handle.focus();
+	 }-*/;
+
+  private static native int getLineCountBridge10(JavaScriptObject handle) /*-{
+
+		return handle.session.getLength();
+	 }-*/;
+
+  private static native void setTextBridge11(JavaScriptObject handle, String text) /*-{
+
+		handle.getSession().setValue(text);
+	 }-*/;
+
+  private static native String getLineBridge12(JavaScriptObject handle, int row) /*-{
+
+		return handle.getSession().getDocument().getLine(row);
+	 }-*/;
+
+  private static native void insertAtCursorBridge13(JavaScriptObject handle, String text) /*-{
+
+		handle.insert(text);
+	 }-*/;
+
   private static native int getIndexFromPositionImplBridge14(
-      org.teavm.jso.JSObject handle, org.teavm.jso.JSObject jsPosition);
+      JavaScriptObject handle, JavaScriptObject jsPosition) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "useSoftTabs"},
-      script = "\n\t\t\n\t\thandle.getSession().setUseSoftTabs(useSoftTabs);\n\t")
+		return handle.getSession().getDocument().positionToIndex(jsPosition);
+	 }-*/;
+
   private static native void setUseSoftTabsBridge15(
-      org.teavm.jso.JSObject handle, boolean useSoftTabs);
+      JavaScriptObject handle, boolean useSoftTabs) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "tabSize"},
-      script = "\n\t\t\n\t\thandle.getSession().setTabSize(tabSize);\n\t")
-  private static native void setTabSizeBridge16(org.teavm.jso.JSObject handle, int tabSize);
+		handle.getSession().setUseSoftTabs(useSoftTabs);
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "line"},
-      script = "\n\t\t\n\t\thandle.gotoLine(line);\n\t")
-  private static native void gotoLineBridge17(org.teavm.jso.JSObject handle, int line);
+  private static native void setTabSizeBridge16(JavaScriptObject handle, int tabSize) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "hScrollBarAlwaysVisible"},
-      script =
-          "\n\t\t\n\t\thandle.renderer.setHScrollBarAlwaysVisible(hScrollBarAlwaysVisible);\n\t")
+		handle.getSession().setTabSize(tabSize);
+	 }-*/;
+
+  private static native void gotoLineBridge17(JavaScriptObject handle, int line) /*-{
+
+		handle.gotoLine(line);
+	 }-*/;
+
   private static native void setHScrollBarAlwaysVisibleBridge18(
-      org.teavm.jso.JSObject handle, boolean hScrollBarAlwaysVisible);
+      JavaScriptObject handle, boolean hScrollBarAlwaysVisible) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "showGutter"},
-      script = "\n\t\t\n\t\thandle.renderer.setShowGutter(showGutter);\n\t")
+		handle.renderer.setHScrollBarAlwaysVisible(hScrollBarAlwaysVisible);
+	 }-*/;
+
   private static native void setShowGutterBridge19(
-      org.teavm.jso.JSObject handle, boolean showGutter);
+      JavaScriptObject handle, boolean showGutter) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "readOnly"},
-      script = "\n\t\t\n\t\thandle.setReadOnly(readOnly);\n\t")
-  private static native void setReadOnlyBridge20(org.teavm.jso.JSObject handle, boolean readOnly);
+		handle.renderer.setShowGutter(showGutter);
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "highlightSelectedWord"},
-      script = "\n\t\t\n\t\thandle.setHighlightSelectedWord(highlightSelectedWord);\n\t")
+  private static native void setReadOnlyBridge20(JavaScriptObject handle, boolean readOnly) /*-{
+
+		handle.setReadOnly(readOnly);
+	 }-*/;
+
   private static native void setHighlightSelectedWordBridge21(
-      org.teavm.jso.JSObject handle, boolean highlightSelectedWord);
+      JavaScriptObject handle, boolean highlightSelectedWord) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "showPrintMargin"},
-      script = "\n\t\t\n\t\thandle.renderer.setShowPrintMargin(showPrintMargin);\n\t")
+		handle.setHighlightSelectedWord(highlightSelectedWord);
+	 }-*/;
+
   private static native void setShowPrintMarginBridge22(
-      org.teavm.jso.JSObject handle, boolean showPrintMargin);
+      JavaScriptObject handle, boolean showPrintMargin) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "command"},
-      script = "\n\t\t\n\t\thandle.commands.removeCommand(command);\n\t")
+		handle.renderer.setShowPrintMargin(showPrintMargin);
+	 }-*/;
+
   private static native void removeCommandByNameBridge23(
-      org.teavm.jso.JSObject handle, String command);
+      JavaScriptObject handle, String command) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "useWrapMode"},
-      script = "\n\t\t\n\t\thandle.getSession().setUseWrapMode(useWrapMode);\n\t")
+		handle.commands.removeCommand(command);
+	 }-*/;
+
   private static native void setUseWrapModeBridge24(
-      org.teavm.jso.JSObject handle, boolean useWrapMode);
+      JavaScriptObject handle, boolean useWrapMode) /*-{
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "b"},
-      script =
-          "\n\t\t// See: https://github.com/ajaxorg/ace/wiki/How-to-enable-Autocomplete-in-the-Ace-handle\n\t\t\n\t\tif (b) {\n\t\t\twindow.ace.require(\"ace/ext/language_tools\");\n\t\t\thandle.setOptions({ enableBasicAutocompletion: true });\n\t\t} else {\n\t\t\thandle.setOptions({ enableBasicAutocompletion: false });\n\t\t}\n\t")
+		handle.getSession().setUseWrapMode(useWrapMode);
+	 }-*/;
+
   private static native void setAutocompleteEnabledBridge25(
-      org.teavm.jso.JSObject handle, boolean b);
+      JavaScriptObject handle, boolean b) /*-{
+		// See: https://github.com/ajaxorg/$wnd.ace/wiki/How-to-enable-Autocomplete-in-the-Ace-handle
 
-  @org.teavm.jso.JSBody(
-      params = {},
-      script =
-          "\n\t\tvar langTools = window.ace.require(\"ace/ext/language_tools\");\n\t\tlangTools.setCompleters([]);\n    ")
-  private static native void removeAllExistingCompletersBridge26();
+		if (b) {
+			$wnd.ace.require("ace/ext/language_tools");
+			handle.setOptions({ enableBasicAutocompletion: true });
+		} else {
+			handle.setOptions({ enableBasicAutocompletion: false });
+		}
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\t\n\t\treturn handle.getSession().getSelection();\n\t")
-  private static native org.teavm.jso.JSObject getSelectionJSBridge27(
-      org.teavm.jso.JSObject handle);
+  private static native void removeAllExistingCompletersBridge26() /*-{
+		var langTools = $wnd.ace.require("ace/ext/language_tools");
+		langTools.setCompleters([]);
+     }-*/;
+
+  private static native JavaScriptObject getSelectionJSBridge27(JavaScriptObject handle) /*-{
+
+		return handle.getSession().getSelection();
+	 }-*/;
 }

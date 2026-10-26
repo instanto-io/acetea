@@ -22,7 +22,6 @@
 package edu.ycp.cs.dh.acegwt.client.ace;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import org.teavm.jso.*;
 
 class AceCompletionCallbackImpl implements AceCompletionCallback {
   private final JavaScriptObject callback;
@@ -32,21 +31,14 @@ class AceCompletionCallbackImpl implements AceCompletionCallback {
   }
 
   public void invokeWithCompletions(AceCompletion[] proposals) {
-    JSObject array = array();
-    for (AceCompletion proposal : proposals) push(array, proposal.toJsObject().unwrap());
-    invoke(callback.unwrap(), array);
+    JavaScriptObject array = array();
+    for (AceCompletion proposal : proposals) push(array, proposal.toJsObject());
+    invoke(callback, array);
   }
 
-  @JSBody(script = "return [];")
-  private static native JSObject array();
+  private static native JavaScriptObject array() /*-{ return []; }-*/;
 
-  @JSBody(
-      params = {"a", "v"},
-      script = "a.push(v);")
-  private static native void push(JSObject a, JSObject v);
+  private static native void push(JavaScriptObject a, JavaScriptObject v) /*-{ a.push(v); }-*/;
 
-  @JSBody(
-      params = {"f", "a"},
-      script = "f(null,a);")
-  private static native void invoke(JSObject f, JSObject a);
+  private static native void invoke(JavaScriptObject f, JavaScriptObject a) /*-{ f(null,a); }-*/;
 }

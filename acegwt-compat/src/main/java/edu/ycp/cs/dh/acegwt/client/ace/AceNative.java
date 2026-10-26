@@ -1,81 +1,58 @@
 package edu.ycp.cs.dh.acegwt.client.ace;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import org.teavm.jso.*;
+import jsinterop.annotations.JsFunction;
 
 final class AceNative {
   private AceNative() {}
 
-  @JSBody(
-      params = {"o", "k"},
-      script = "return o[k]();")
-  static native JSObject callObject(JSObject o, String k);
+  static native JavaScriptObject callObject(JavaScriptObject o, String k) /*-{ return o[k](); }-*/;
 
-  @JSBody(
-      params = {"o", "k"},
-      script = "return o[k] == null ? null : String(o[k]);")
-  static native String string(JSObject o, String k);
+  static native String string(
+      JavaScriptObject o, String k) /*-{ return o[k] == null ? null : String(o[k]); }-*/;
 
-  @JSBody(
-      params = {"o", "k"},
-      script = "return !!o[k];")
-  static native boolean bool(JSObject o, String k);
+  static native boolean bool(JavaScriptObject o, String k) /*-{ return !!o[k]; }-*/;
 
-  @JSBody(
-      params = {"o", "k"},
-      script = "return o[k] == null ? null : o[k];")
-  static native JSObject get(JSObject o, String k);
+  static native JavaScriptObject get(
+      JavaScriptObject o, String k) /*-{ return o[k] == null ? null : o[k]; }-*/;
 
-  @JSBody(
-      params = {"o", "k"},
-      script = "return o[k]|0;")
-  static native int integer(JSObject o, String k);
+  static native int integer(JavaScriptObject o, String k) /*-{ return o[k]|0; }-*/;
 
-  @JSBody(
-      params = {"o", "k", "v"},
-      script = "o[k]=v;")
-  static native void put(JSObject o, String k, String v);
+  static native void put(JavaScriptObject o, String k, String v) /*-{ o[k]=v; }-*/;
 
-  @JSBody(params = "v", script = "return v;")
-  static native JSObject value(String v);
+  static native JavaScriptObject value(String v) /*-{ return v; }-*/;
 
-  @JSBody(params = "v", script = "return typeof v === 'string';")
-  static native boolean isString(JSObject v);
+  static native boolean isString(JavaScriptObject v) /*-{ return typeof v === 'string'; }-*/;
 
-  @JSBody(params = "v", script = "return String(v);")
-  static native String text(JSObject v);
+  static native String text(JavaScriptObject v) /*-{ return String(v); }-*/;
 
-  @JSBody(script = "return [];")
-  static native JSObject array();
+  static native JavaScriptObject array() /*-{ return []; }-*/;
 
-  @JSBody(
-      params = {"a", "v"},
-      script = "a.push(v);")
-  static native void push(JSObject a, JSObject v);
+  static native void push(JavaScriptObject a, JavaScriptObject v) /*-{ a.push(v); }-*/;
 
-  static AceEditorCursorPosition position(JSObject p) {
+  static AceEditorCursorPosition position(JavaScriptObject p) {
     return new AceEditorCursorPosition(integer(p, "row"), integer(p, "column"));
   }
 
-  static JSObject argument(Object value) {
+  static JavaScriptObject argument(Object value) {
     if (value == null) return null;
     if (value instanceof String) return value((String) value);
-    if (value instanceof JavaScriptObject) return ((JavaScriptObject) value).unwrap();
+    if (value instanceof JavaScriptObject) return ((JavaScriptObject) value);
     throw new IllegalArgumentException("Ace arguments must be strings or JavaScriptObject handles");
   }
 
-  @JSFunctor
-  interface Action extends JSObject {
+  @JsFunction
+  interface Action {
     void run();
   }
 
-  @JSFunctor
-  interface Event extends JSObject {
-    void fire(JSObject event);
+  @JsFunction
+  interface Event {
+    void fire(JavaScriptObject event);
   }
 
-  @JSFunctor
-  interface Completion extends JSObject {
-    void complete(int id, int row, int column, String prefix, JSObject callback);
+  @JsFunction
+  interface Completion {
+    void complete(int id, int row, int column, String prefix, JavaScriptObject callback);
   }
 }

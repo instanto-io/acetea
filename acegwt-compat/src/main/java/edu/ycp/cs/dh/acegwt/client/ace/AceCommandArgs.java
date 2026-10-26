@@ -29,14 +29,11 @@ public class AceCommandArgs {
   public AceCommandArgs with(String argKey, String argValue) {
     if (!(value instanceof JavaScriptObject))
       throw new IllegalStateException("Named arguments require a map");
-    put(((JavaScriptObject) value).unwrap(), argKey, argValue);
+    put(((JavaScriptObject) value), argKey, argValue);
     return this;
   }
 
-  @org.teavm.jso.JSBody(
-      params = {"v", "k", "x"},
-      script = "v[k]=x;")
-  private static native void put(org.teavm.jso.JSObject v, String k, String x);
+  private static native void put(JavaScriptObject v, String k, String x) /*-{ v[k]=x; }-*/;
 
   /**
    * Give inner value.

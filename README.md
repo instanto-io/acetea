@@ -1,8 +1,8 @@
 # AceTea
 
-AceTea provides a Java API for the Ace code editor in TeaVM applications. It is
+AceTea provides a Java API for the Ace code editor in GWT and TeaVM applications. It is
 based on [Dave Hovemeyer's AceGWT](https://github.com/daveho/AceGWT), retaining the
-`edu.ycp.cs.dh.acegwt.client.ace` package and adapting the implementation to TeaVM.
+`edu.ycp.cs.dh.acegwt.client.ace` package and maintaining shared GWT-compatible sources for both compilers.
 It bundles **Ace 1.45.2**, updated from the original wrapper's Ace 1.3.3.
 
 **Alpha — `0.1.0-SNAPSHOT`.** The port is available for evaluation. The API and
@@ -20,7 +20,15 @@ packaging may change, and compatibility with AceGWT is partial.
 </dependency>
 ```
 
-Use this in a TeaVM application with the Instanto compatibility toolchain.
+Use `acegwt-compat` in a TeaVM application with the Instanto compatibility
+toolchain. For GWT 2.13.1, use `acetea-gwt` instead and inherit
+`edu.ycp.cs.dh.acegwt.AceGWT` in your GWT module. Choose the artifact for your
+compiler; they provide the same packages and API.
+
+The canonical sources use GWT widgets, DOM types, `ScriptInjector`, JSNI and
+JsInterop callbacks. The TeaVM build generates native bindings through the shared
+source adapter and uses the GWT compatibility layer. Native overlay adaptation
+belongs to that shared layer, rather than a separate AceTea implementation.
 The coordinates use the current alpha snapshot, which can be installed from
 source. Maven Central publication is planned. The artifact keeps its AceGWT name
 to ease migration.
@@ -192,13 +200,16 @@ again, then restore the text and configuration. History is not restored.
 The showcase demonstrates Java, JSON and SQL editing, themes, selection,
 annotations, markers, Java completion callbacks, snippets, search/replace,
 undo/redo, display options, commands and editor recreation. Browser contracts
-exercise these paths in Chromium and WebKit.
+exercise the same showcase paths on GWT 2.13.1 and TeaVM in Chromium and WebKit.
 
-The port preserves most upstream method shapes, but is not a binary-compatible
-GWT artifact. Use the provided wrappers in place of arbitrary GWT overlay casts.
+The port preserves the upstream packages and most method shapes. Source
+compatibility is partial; a successful showcase build does not establish every
+legacy use case. `AceRange` remains a GWT overlay type; the TeaVM source adapter
+supplies its native wrapper. Arbitrary overlay casts on TeaVM are not supported.
 Dedicated Java APIs for independent sessions, code lenses, inline ghost text,
 diff views and arbitrary extensions are not implemented. `unwrapEditor()` gives
-advanced integrations access to the native editor. Not every bundled mode or
+advanced integrations a `JavaScriptObject` handle for the native editor on either
+compiler. This replaces the alpha's earlier TeaVM-specific `JSObject` return type. Not every bundled mode or
 extension has been tested.
 
 ## Build
@@ -210,9 +221,11 @@ artifacts installed. With the project's Playwright browsers available:
 mvn clean verify
 ```
 
-This builds the library, WebJar and showcase, and runs the Chromium/WebKit tests.
+This builds both library artifacts, the WebJar and both showcases, then runs
+the Chromium/WebKit tests for each compiler.
 `mvn install` also installs the alpha artifacts into your local Maven repository.
-The generated site is in `acegwt-demo/target/site`. The
+The TeaVM site is in `acegwt-demo/target/site`; the GWT site is in
+`acetea-gwt-demo/target/site`. The
 [build workflow](.github/workflows/build.yml) records the build environment and
 browser installation steps.
 

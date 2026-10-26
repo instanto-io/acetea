@@ -1,5 +1,8 @@
 name: Build AceTea and publish showcase
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
@@ -48,7 +51,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: browser-test-reports
-          path: acegwt-demo/target/failsafe-reports/
+          path: |
+            acegwt-demo/target/failsafe-reports/
+            acetea-gwt-demo/target/failsafe-reports/
       - name: Package showcase for GitHub Pages
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3

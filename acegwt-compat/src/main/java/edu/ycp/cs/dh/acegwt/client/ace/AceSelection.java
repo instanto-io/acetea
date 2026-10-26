@@ -26,19 +26,17 @@ public class AceSelection {
               lst.onChangeSelection(AceSelection.this);
           }
         };
-    registerRootListener(selection.unwrap(), () -> rootListener.onChangeSelection(this));
+    registerRootListener(selection, () -> rootListener.onChangeSelection(this));
   }
 
-  @org.teavm.jso.JSFunctor
-  private interface Changed extends org.teavm.jso.JSObject {
+  @jsinterop.annotations.JsFunction
+  private interface Changed {
     void changed();
   }
 
-  @org.teavm.jso.JSBody(
-      params = {"selection", "listener"},
-      script = "selection.on('changeSelection',listener);")
   private static native void registerRootListener(
-      org.teavm.jso.JSObject selection, Changed listener);
+      JavaScriptObject selection,
+      Changed listener) /*-{ selection.on('changeSelection',listener); }-*/;
 
   /**
    * Register listener for selection change events.
@@ -64,7 +62,7 @@ public class AceSelection {
    * @return true in case selection is empty
    */
   public boolean isEmpty() {
-    return isEmptyBridge1(selection.unwrap());
+    return isEmptyBridge1(selection);
   }
 
   /**
@@ -73,7 +71,7 @@ public class AceSelection {
    * @return true in case selection contains several lines
    */
   public boolean isMultiLine() {
-    return isMultiLineBridge2(selection.unwrap());
+    return isMultiLineBridge2(selection);
   }
 
   private AceEditorCursorPosition getCursorPositionImpl(final double row, final double column) {
@@ -86,7 +84,7 @@ public class AceSelection {
    * @return position of leading end of selection
    */
   public AceEditorCursorPosition getSelectionLead() {
-    return AceNative.position(AceNative.callObject(selection.unwrap(), "getSelectionLead"));
+    return AceNative.position(AceNative.callObject(selection, "getSelectionLead"));
   }
 
   /**
@@ -95,7 +93,7 @@ public class AceSelection {
    * @return starting position of selection
    */
   public AceEditorCursorPosition getSelectionAnchor() {
-    return AceNative.position(AceNative.callObject(selection.unwrap(), "getSelectionAnchor"));
+    return AceNative.position(AceNative.callObject(selection, "getSelectionAnchor"));
   }
 
   /**
@@ -104,17 +102,17 @@ public class AceSelection {
    * @return true in case selection leading position is located before anchor position
    */
   public boolean isBackwards() {
-    return isBackwardsBridge3(selection.unwrap());
+    return isBackwardsBridge3(selection);
   }
 
   /** Clear selection. */
   public void clearSelection() {
-    clearSelectionBridge4(selection.unwrap());
+    clearSelectionBridge4(selection);
   }
 
   /** Select the whole text. */
   public void selectAll() {
-    selectAllBridge5(selection.unwrap());
+    selectAllBridge5(selection);
   }
 
   /**
@@ -126,49 +124,45 @@ public class AceSelection {
    * @param toColumn column of selection leading position
    */
   public void select(int fromRow, int fromColumn, int toRow, int toColumn) {
-    selectBridge6(selection.unwrap(), fromRow, fromColumn, toRow, toColumn);
+    selectBridge6(selection, fromRow, fromColumn, toRow, toColumn);
   }
 
   /** Select line where cursor is located. */
   public void selectLine() {
-    selectLineBridge7(selection.unwrap());
+    selectLineBridge7(selection);
   }
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\treturn handle.isEmpty();\n\t")
-  private static native boolean isEmptyBridge1(org.teavm.jso.JSObject handle);
+  private static native boolean isEmptyBridge1(JavaScriptObject handle) /*-{
+		return handle.isEmpty();
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\treturn handle.isMultiLine();\n\t")
-  private static native boolean isMultiLineBridge2(org.teavm.jso.JSObject handle);
+  private static native boolean isMultiLineBridge2(JavaScriptObject handle) /*-{
+		return handle.isMultiLine();
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\treturn handle.isBackwards();\n\t")
-  private static native boolean isBackwardsBridge3(org.teavm.jso.JSObject handle);
+  private static native boolean isBackwardsBridge3(JavaScriptObject handle) /*-{
+		return handle.isBackwards();
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\thandle.clearSelection();\n\t")
-  private static native void clearSelectionBridge4(org.teavm.jso.JSObject handle);
+  private static native void clearSelectionBridge4(JavaScriptObject handle) /*-{
+		handle.clearSelection();
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script = "\n\t\thandle.selectAll();\n\t")
-  private static native void selectAllBridge5(org.teavm.jso.JSObject handle);
+  private static native void selectAllBridge5(JavaScriptObject handle) /*-{
+		handle.selectAll();
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle", "fromRow", "fromColumn", "toRow", "toColumn"},
-      script =
-          "\n\t\thandle.setSelectionAnchor(fromRow, fromColumn);\n\t\thandle.selectTo(toRow, toColumn);\n\t")
   private static native void selectBridge6(
-      org.teavm.jso.JSObject handle, int fromRow, int fromColumn, int toRow, int toColumn);
+      JavaScriptObject handle, int fromRow, int fromColumn, int toRow, int toColumn) /*-{
+		handle.setSelectionAnchor(fromRow, fromColumn);
+		handle.selectTo(toRow, toColumn);
+	 }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"handle"},
-      script =
-          "\n\t\tvar s = handle;\n\t\tvar pos = s.getSelectionLead();\n\t\tvar len = s.doc.getLine(pos.row).length;\n\t\ts.setSelectionAnchor(pos.row, 0);\n\t\ts.selectTo(pos.row, len);\n\t")
-  private static native void selectLineBridge7(org.teavm.jso.JSObject handle);
+  private static native void selectLineBridge7(JavaScriptObject handle) /*-{
+		var s = handle;
+		var pos = s.getSelectionLead();
+		var len = s.doc.getLine(pos.row).length;
+		s.setSelectionAnchor(pos.row, 0);
+		s.selectTo(pos.row, len);
+	 }-*/;
 }

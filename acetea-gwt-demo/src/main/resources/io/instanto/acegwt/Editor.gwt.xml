@@ -1,0 +1,1 @@
+<module rename-to="editor"><inherits name="edu.ycp.cs.dh.acegwt.AceGWT"/><source path="demo"/><entry-point class="io.instanto.acegwt.demo.GwtEntry"/></module>

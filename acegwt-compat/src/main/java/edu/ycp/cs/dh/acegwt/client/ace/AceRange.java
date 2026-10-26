@@ -1,66 +1,48 @@
 package edu.ycp.cs.dh.acegwt.client.ace;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import org.teavm.jso.*;
 
+/** A native Ace range with zero-based positions and an exclusive end. */
 public final class AceRange extends JavaScriptObject {
-  protected AceRange() {
-    super(null);
-  }
+  protected AceRange() {}
 
-  private AceRange(JSObject value) {
-    super(value);
-  }
-
-  static AceRange wrap(JSObject value) {
-    return value == null ? null : new AceRange(value);
-  }
-
-  /** Zero-based start position. */
-  public AceEditorCursorPosition getStart() {
+  public final AceEditorCursorPosition getStart() {
     return new AceEditorCursorPosition(
-        coordinate(unwrap(), "start", "row"), coordinate(unwrap(), "start", "column"));
+        coordinate(this, "start", "row"), coordinate(this, "start", "column"));
   }
 
-  /** Zero-based exclusive end position. */
-  public AceEditorCursorPosition getEnd() {
+  public final AceEditorCursorPosition getEnd() {
     return new AceEditorCursorPosition(
-        coordinate(unwrap(), "end", "row"), coordinate(unwrap(), "end", "column"));
+        coordinate(this, "end", "row"), coordinate(this, "end", "column"));
   }
 
-  @JSBody(
-      params = {"range", "end", "coordinate"},
-      script = "return range[end][coordinate];")
-  private static native int coordinate(JSObject range, String end, String coordinate);
+  private static native int coordinate(AceRange range, String end, String coordinate) /*-{
+    return range[end][coordinate];
+  }-*/;
 
-  public static AceRange create(int a, int b, int c, int d) {
-    return new AceRange(make(a, b, c, d));
-  }
+  public static native AceRange create(int a, int b, int c, int d) /*-{
+    var R = $wnd.ace.require('ace/range').Range;
+    return new R(a, b, c, d);
+  }-*/;
 
   static JavaScriptObject toJsObject(int a, int b, int c, int d) {
     return create(a, b, c, d);
   }
 
-  @JSBody(
-      params = {"a", "b", "c", "d"},
-      script = "var R=ace.require('ace/range').Range; return new R(a,b,c,d);")
-  private static native JSObject make(int a, int b, int c, int d);
-
-  public void detach() {
+  public final void detach() {
     detachStart();
     detachEnd();
   }
 
-  public void detachStart() {
-    detach(unwrap(), "start");
+  public final void detachStart() {
+    detach(this, "start");
   }
 
-  public void detachEnd() {
-    detach(unwrap(), "end");
+  public final void detachEnd() {
+    detach(this, "end");
   }
 
-  @JSBody(
-      params = {"r", "end"},
-      script = "if(r[end] && typeof r[end].detach === 'function') r[end].detach();")
-  private static native void detach(JSObject r, String end);
+  private static native void detach(AceRange r, String end) /*-{
+    if (r[end] && typeof r[end].detach === 'function') r[end].detach();
+  }-*/;
 }

@@ -2,4 +2,4 @@ acetea-webjar/src/main/resources/** linguist-vendored
 upstream/** linguist-vendored
 
 # Preserve exact upstream license bytes recorded by provenance checksums.
-acegwt-demo/src/main/webapp/legal/runtime/** -text
+acegwt-demo/src/main/webapp/legal/runtime/** -text -whitespace

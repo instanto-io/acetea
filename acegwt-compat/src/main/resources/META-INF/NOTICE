@@ -2,7 +2,7 @@ AceTea
 
 Based on AceGWT by Dave Hovemeyer and contributors.
 Copyright (c) 2011-2019 David Hovemeyer. See LICENSE for the MIT terms.
-TeaVM adaptation, resource loading and showcase changes are maintained by Instanto.
+Modern GWT and TeaVM adaptation, resource loading and showcase changes are maintained by Instanto.
 Original source provenance is recorded in upstream/manifest.json.
 
 Bundled Ace 1.45.2 is Copyright (c) 2010, Ajax.org B.V.

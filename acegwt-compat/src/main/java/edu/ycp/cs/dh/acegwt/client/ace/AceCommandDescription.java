@@ -225,12 +225,11 @@ public class AceCommandDescription {
    */
   public static AceCommandDescription fromJavaScript(JavaScriptObject obj) {
     if (obj == null) return null;
-    org.teavm.jso.JSObject v = obj.unwrap();
+    JavaScriptObject v = obj;
     AceCommandDescription ret =
         new AceCommandDescription(
-            AceNative.string(v, "name"),
-            createJavaScriptWrapper(JavaScriptObject.of(AceNative.get(v, "exec"))));
-    ret.bindKey = KeyBinding.fromJavaScript(JavaScriptObject.of(AceNative.get(v, "bindKey")));
+            AceNative.string(v, "name"), createJavaScriptWrapper(AceNative.get(v, "exec")));
+    ret.bindKey = KeyBinding.fromJavaScript(AceNative.get(v, "bindKey"));
     ret.readOnly = AceNative.bool(v, "readOnly");
     ret.passEvent = AceNative.bool(v, "passEvent");
     ret.scrollIntoView = ScrollIntoView.fromString(AceNative.string(v, "scrollIntoView"));
@@ -254,7 +253,7 @@ public class AceCommandDescription {
   }
 
   private static Object invokeJavaScriptCommand(Object jsFunction, AceEditor javaWrapper) {
-    return JavaScriptObject.of(invoke(AceNative.argument(jsFunction), javaWrapper.unwrapEditor()));
+    return invoke(AceNative.argument(jsFunction), javaWrapper.unwrapEditor());
   }
 
   /**
@@ -264,16 +263,15 @@ public class AceCommandDescription {
    * @return Ace command javascript object
    */
   public JavaScriptObject toJavaScript(AceEditor editor) {
-    return JavaScriptObject.of(
-        make(
-            name,
-            () -> exec.exec(editor),
-            bindKey == null ? null : AceNative.argument(bindKey.toJavaScript()),
-            readOnly,
-            passEvent,
-            scrollIntoView == null ? null : scrollIntoView.name(),
-            multiSelectAction == null ? null : multiSelectAction.name(),
-            aceCommandGroup));
+    return make(
+        name,
+        () -> exec.exec(editor),
+        bindKey == null ? null : AceNative.argument(bindKey.toJavaScript()),
+        readOnly,
+        passEvent,
+        scrollIntoView == null ? null : scrollIntoView.name(),
+        multiSelectAction == null ? null : multiSelectAction.name(),
+        aceCommandGroup);
   }
 
   /** Key binding description. */
@@ -325,7 +323,7 @@ public class AceCommandDescription {
 
     private static KeyBinding fromJavaScript(Object obj) {
       if (obj == null) return null;
-      org.teavm.jso.JSObject v = AceNative.argument(obj);
+      JavaScriptObject v = AceNative.argument(obj);
       if (AceNative.isString(v)) return new KeyBinding(AceNative.text(v));
       return new KeyBinding(AceNative.string(v, "win"), AceNative.string(v, "mac"));
     }
@@ -333,8 +331,8 @@ public class AceCommandDescription {
     private Object toJavaScript() {
       if (allPlatforms != null) return allPlatforms;
       JavaScriptObject v = JavaScriptObject.createObject();
-      AceNative.put(v.unwrap(), "win", exceptMac);
-      AceNative.put(v.unwrap(), "mac", mac);
+      AceNative.put(v, "win", exceptMac);
+      AceNative.put(v, "mac", mac);
       return v;
     }
   }
@@ -380,23 +378,17 @@ public class AceCommandDescription {
     }
   }
 
-  @org.teavm.jso.JSBody(
-      params = {"f", "e"},
-      script = "var r=f(e); return r == null ? null : r;")
-  private static native org.teavm.jso.JSObject invoke(
-      org.teavm.jso.JSObject f, org.teavm.jso.JSObject e);
+  private static native JavaScriptObject invoke(
+      JavaScriptObject f, JavaScriptObject e) /*-{ var r=f(e); return r == null ? null : r; }-*/;
 
-  @org.teavm.jso.JSBody(
-      params = {"name", "exec", "key", "ro", "pass", "scroll", "multi", "group"},
-      script =
-          "var c={name:name,exec:exec,readOnly:ro,passEvent:pass}; if(key)c.bindKey=key;if(scroll)c.scrollIntoView=scroll;if(multi)c.multiSelectAction=multi;if(group)c.aceCommandGroup=group;return c;")
-  private static native org.teavm.jso.JSObject make(
+  private static native JavaScriptObject make(
       String name,
       AceNative.Action exec,
-      org.teavm.jso.JSObject key,
+      JavaScriptObject key,
       boolean ro,
       boolean pass,
       String scroll,
       String multi,
-      String group);
+      String
+          group) /*-{ var c={name:name,exec:exec,readOnly:ro,passEvent:pass}; if(key)c.bindKey=key;if(scroll)c.scrollIntoView=scroll;if(multi)c.multiSelectAction=multi;if(group)c.aceCommandGroup=group;return c; }-*/;
 }

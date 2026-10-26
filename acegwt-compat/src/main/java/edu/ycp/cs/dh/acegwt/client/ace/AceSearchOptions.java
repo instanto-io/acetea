@@ -1,7 +1,6 @@
 package edu.ycp.cs.dh.acegwt.client.ace;
 
-import org.teavm.jso.JSBody;
-import org.teavm.jso.JSObject;
+import com.google.gwt.core.client.JavaScriptObject;
 
 /** Search settings. Defaults: literal, case-insensitive, forward, wrapping, skip current match. */
 public final class AceSearchOptions {
@@ -39,28 +38,17 @@ public final class AceSearchOptions {
     return this;
   }
 
-  JSObject toNative(String needle) {
+  JavaScriptObject toNative(String needle) {
     return create(needle, caseSensitive, wholeWord, regExp, backwards, wrap, skipCurrent);
   }
 
-  @JSBody(
-      params = {
-        "needle",
-        "caseSensitive",
-        "wholeWord",
-        "regExp",
-        "backwards",
-        "wrap",
-        "skipCurrent"
-      },
-      script =
-          "return {needle:needle, caseSensitive:caseSensitive, wholeWord:wholeWord, regExp:regExp, backwards:backwards, wrap:wrap, skipCurrent:skipCurrent, range:null, start:null, preventScroll:false, preserveCase:false};")
-  private static native JSObject create(
+  private static native JavaScriptObject create(
       String needle,
       boolean caseSensitive,
       boolean wholeWord,
       boolean regExp,
       boolean backwards,
       boolean wrap,
-      boolean skipCurrent);
+      boolean
+          skipCurrent) /*-{ return {needle:needle, caseSensitive:caseSensitive, wholeWord:wholeWord, regExp:regExp, backwards:backwards, wrap:wrap, skipCurrent:skipCurrent, range:null, start:null, preventScroll:false, preserveCase:false}; }-*/;
 }

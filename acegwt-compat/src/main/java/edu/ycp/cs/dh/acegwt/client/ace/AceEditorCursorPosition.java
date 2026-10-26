@@ -74,11 +74,13 @@ public class AceEditorCursorPosition {
    * @return native Ace JavaScript position object
    */
   public JavaScriptObject toJsObject() {
-    return JavaScriptObject.of(toJsObjectNative(row, column));
+    return toJsObjectNative(row, column);
   }
 
-  @org.teavm.jso.JSBody(
-      params = {"row", "column"},
-      script = "\n\t\treturn {\n\t\t\trow: row,\n\t\t\tcolumn: column\n\t\t};\n\t")
-  private static native org.teavm.jso.JSObject toJsObjectNative(int row, int column);
+  private static native JavaScriptObject toJsObjectNative(int row, int column) /*-{
+		return {
+			row: row,
+			column: column
+		};
+	 }-*/;
 }
