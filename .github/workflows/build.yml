@@ -33,14 +33,15 @@ jobs:
           --update-snapshots
           -Dmaven.repo.local="$RUNNER_TEMP/acetea-m2-${{ github.run_id }}-${{ github.run_attempt }}"
           clean install -DskipTests
-      - name: Install Chromium and WebKit with system libraries
+      # System libraries are supplied by the runner image.
+      - name: Install Chromium and WebKit
         run: >-
           mvn --settings .github/maven-settings.xml --batch-mode --no-transfer-progress
           -Dmaven.repo.local="$RUNNER_TEMP/acetea-m2-${{ github.run_id }}-${{ github.run_attempt }}"
           -f acegwt-demo/pom.xml
           org.codehaus.mojo:exec-maven-plugin:3.5.0:java
           -Dexec.classpathScope=test -Dexec.mainClass=com.microsoft.playwright.CLI
-          -Dexec.args="install --with-deps chromium webkit"
+          -Dexec.args="install chromium webkit"
       - name: Verify browser contracts
         run: >-
           mvn --settings .github/maven-settings.xml --batch-mode --no-transfer-progress
