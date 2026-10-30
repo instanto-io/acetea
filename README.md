@@ -240,6 +240,7 @@ gate fails.
 
 See [Actions](https://github.com/instanto-io/acetea/actions) for the latest
 verification and quality summary.
+
 ## Credits and licenses
 
 AceTea is based on AceGWT commit `b0796a534c05af17a345b9ff48fa2772844547c0`.
