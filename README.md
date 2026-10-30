@@ -229,6 +229,17 @@ The TeaVM site is in `acegwt-demo/target/site`; the GWT site is in
 [build workflow](.github/workflows/build.yml) records the build environment and
 browser installation steps.
 
+## Quality
+
+SpotBugs runs on every build. High-priority findings fail the build, and all
+findings are published to [code scanning](https://github.com/instanto-io/acetea/security/code-scanning).
+SonarQube analysis runs on `main` against the organisation's private instance;
+maintainers see the gate, coverage and issue counts in the workflow summary.
+The Sonar quality gate is advisory, so a snapshot still publishes when only that
+gate fails.
+
+See [Actions](https://github.com/instanto-io/acetea/actions) for the latest
+verification and quality summary.
 ## Credits and licenses
 
 AceTea is based on AceGWT commit `b0796a534c05af17a345b9ff48fa2772844547c0`.
