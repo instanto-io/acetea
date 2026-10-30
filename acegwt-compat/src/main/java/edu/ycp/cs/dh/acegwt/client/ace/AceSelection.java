@@ -74,10 +74,6 @@ public class AceSelection {
     return isMultiLineBridge2(selection);
   }
 
-  private AceEditorCursorPosition getCursorPositionImpl(final double row, final double column) {
-    return new AceEditorCursorPosition((int) row, (int) column);
-  }
-
   /**
    * Give position of leading end of selection (where cursor is located).
    *

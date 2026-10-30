@@ -3,6 +3,7 @@ package io.instanto.acegwt.demo;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.RootPanel;
 import edu.ycp.cs.dh.acegwt.client.ace.*;
+import java.util.Locale;
 import jsinterop.annotations.JsFunction;
 
 /** The showcase's editor operations and callbacks all originate in Java. */
@@ -219,7 +220,7 @@ public final class EditorDemo {
     text(
         "filename",
         mode.equals("java") ? "Main.java" : mode.equals("json") ? "project.json" : "query.sql");
-    text("language", mode.toUpperCase());
+    text("language", mode.toUpperCase(Locale.ROOT));
   }
 
   private static void save() {

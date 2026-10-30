@@ -260,10 +260,6 @@ public class AceEditor extends Composite implements RequiresResize, HasText, Tak
     return AceNative.position(AceNative.callObject(editor, "getCursorPosition"));
   }
 
-  private AceEditorCursorPosition getCursorPositionImpl(final double row, final double column) {
-    return new AceEditorCursorPosition((int) row, (int) column);
-  }
-
   /**
    * Gets the given document position as a zero-based index.
    *
