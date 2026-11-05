@@ -20,6 +20,7 @@
     </license>
   </licenses>
   <properties>
+    <instanto.repository>acetea</instanto.repository>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
